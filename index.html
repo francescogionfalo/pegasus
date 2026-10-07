@@ -217,7 +217,9 @@ p.legend{margin:6px 0 0}
 .st-svg{width:100%;height:auto;display:block;overflow:visible;margin-top:6px}
 .st-bar.ok{fill:var(--green)} .st-bar.miss{fill:var(--muted);opacity:.45} .st-bar.now{fill:url(#st-hatch)}
 .st-axis{stroke:var(--line)} .st-goal{stroke:var(--red);stroke-width:1.5;stroke-dasharray:4 3}
-.st-t{font-family:var(--f-body);font-size:10px;fill:var(--muted)} .st-t.goal{fill:var(--red);font-weight:600}
+.st-t{font-family:var(--f-body);font-size:10px;fill:var(--muted)} .st-t.mon{font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+/* goal label sits over the first bars: a halo in the panel colour keeps it legible */
+.st-t.goal{fill:var(--red);font-weight:600;paint-order:stroke;stroke:var(--sunk);stroke-width:4px;stroke-linejoin:round}
 .stp{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-top:12px;font-size:14px}
 .stp-c{display:flex;align-items:center;gap:8px}
 .stp-c b{font-family:var(--f-display);font-size:24px;font-weight:800}
@@ -235,6 +237,15 @@ p.legend{margin:6px 0 0}
 .st-line{fill:none;stroke:var(--green);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
 .st-dot{fill:var(--green);stroke:var(--surface);stroke-width:1.5}
 .st-grid{stroke:var(--line);stroke-dasharray:2 3}
+.st-tick{stroke:var(--muted)}
+/* hover label (tap on touch): one shared element, positioned by stats.js next to the hovered item */
+#st-tip{position:fixed;z-index:30;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;font-weight:600;line-height:1.3;padding:4px 8px;border-radius:6px;max-width:240px;white-space:nowrap;opacity:0;transition:opacity .12s}
+#st-tip.on{opacity:1}
+.st-hit{fill:transparent;pointer-events:all;cursor:pointer}
+.st-hit.tip-on{fill:var(--ink);fill-opacity:.07}
+.st-dot.tip-on{stroke:var(--ink);stroke-width:3}
+.st-stack span,.st-colbar span,.st-track{cursor:pointer}
+.st-stack span.tip-on,.st-colbar span.tip-on{box-shadow:inset 0 0 0 2px var(--ink)}
 .st-warn{font-size:13px;font-weight:600;color:var(--ink);background:color-mix(in srgb,var(--yellow) 18%,transparent);border-left:3px solid var(--yellow);border-radius:6px;padding:8px 10px;margin:8px 0 0}
 .endnote{font-size:14px;color:var(--muted);text-align:center;margin:18px 8px 0}
 .reset{display:block;margin:12px auto 0;font-size:13px;color:var(--muted);text-decoration:underline}

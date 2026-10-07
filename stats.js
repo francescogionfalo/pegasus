@@ -110,6 +110,7 @@ if(typeof document !== "undefined"){
   window.resetStatsMonth = () => { stMonth = firstOfMonth(); };
   let stEx = null;
   const goal = () => S.goal || 5;
+  const ymdLocal = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
   const sign = n => n>0 ? "+"+fmt(n) : fmt(n);
 
   function kpis(){
@@ -124,53 +125,84 @@ if(typeof document !== "undefined"){
       <div class="kpi"><b class="num">${up}</b><small>Carichi aumentati</small></div>
     </div>`;
   }
+  const monShort = d => d.toLocaleDateString("it-IT",{month:"short"}).replace(".","");
+  // "20-26 lug" or "27 lug - 2 ago" when the week crosses a month
+  function weekRange(mon){
+    const a=parse(mon), b=parse(C.addDays(mon,6));
+    return a.getMonth()===b.getMonth() ? `${a.getDate()}-${b.getDate()} ${monShort(b)}` : `${a.getDate()} ${monShort(a)} - ${b.getDate()} ${monShort(b)}`;
+  }
   function costanza(){
-    const W=300, H=120, B=16, T=14, weeks=C.lastWeeks(S.days,goal(),today()), bw=W/weeks.length;
-    const y=n=>T+(1-n/7)*(H-T-B), gy=y(goal()), LW=62; // LW: width reserved to the goal label at the left edge
+    const W=300, H=136, B=30, T=14, weeks=C.lastWeeks(S.days,goal(),today()), bw=W/weeks.length, base=H-B;
+    const y=n=>T+(1-n/7)*(base-T), gy=y(goal()), LW=62; // LW: width reserved to the goal label at the left edge
     const bars=weeks.map((w,i)=>{ const x=i*bw+3, top=y(w.n), cls=w.current?"now":w.ok?"ok":"miss";
-      return `<rect class="st-bar ${cls}" x="${x}" y="${top}" width="${bw-6}" height="${Math.max(H-B-top,0)}" rx="3"></rect>`
+      return `<rect class="st-bar ${cls}" x="${x}" y="${top}" width="${bw-6}" height="${Math.max(base-top,0)}" rx="3"></rect>`
         +(w.n && !(x+(bw-6)/2-5<LW && Math.abs(top-gy)<12)?`<text class="st-t" x="${x+(bw-6)/2}" y="${top-3}" text-anchor="middle">${w.n}</text>`:"");
     }).join("");
+    // x axis: day of each week's Monday, month name under the first week of each month
+    const axis=weeks.map((w,i)=>{ const d=parse(w.mon), cx=i*bw+bw/2, prev=i?parse(weeks[i-1].mon):null;
+      return `<text class="st-t" x="${cx}" y="${base+12}" text-anchor="middle">${d.getDate()}</text>`
+        +(!prev||prev.getMonth()!==d.getMonth()?`<text class="st-t mon" x="${cx}" y="${base+25}" text-anchor="middle">${monShort(d)}</text>`:""); }).join("");
+    // full-height transparent columns on top: easy to hover or tap even when a bar is short
+    const hits=weeks.map((w,i)=>`<rect class="st-hit" x="${i*bw}" y="0" width="${bw}" height="${base}" data-tip="${w.current?`Settimana in corso (${weekRange(w.mon)}) · ${w.n} su ${goal()} finora`:`Settimana ${weekRange(w.mon)} · ${w.n} giorn${w.n===1?"o":"i"} allenat${w.n===1?"o":"i"} su ${goal()}`}"></rect>`).join("");
     return `<svg class="st-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Giorni allenati nelle ultime 12 settimane, obiettivo ${goal()}">
         <defs><pattern id="st-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" style="fill:var(--green);opacity:.35"></rect><rect width="3" height="6" style="fill:var(--green)"></rect></pattern></defs>
-        <line class="st-axis" x1="0" x2="${W}" y1="${H-B}" y2="${H-B}"></line>
+        <line class="st-axis" x1="0" x2="${W}" y1="${base}" y2="${base}"></line>
         ${bars}
         <line class="st-goal" x1="0" x2="${W}" y1="${gy}" y2="${gy}"></line>
         <text class="st-t goal" x="0" y="${gy-3}" text-anchor="start">obiettivo ${goal()}</text>
-        <text class="st-t" x="0" y="${H-3}">${fmtDate(weeks[0].mon)}</text>
-        <text class="st-t" x="${W}" y="${H-3}" text-anchor="end">settimana in corso</text>
+        ${axis}
+        ${hits}
       </svg>
       <div class="stp"><span>Obiettivo settimanale</span><span class="stp-c"><button class="navb" data-goal="-1" aria-label="Riduci obiettivo">−</button><b class="num">${goal()}</b> giorni<button class="navb" data-goal="1" aria-label="Aumenta obiettivo">+</button></span></div>`;
   }
+  const monLong = d => d.toLocaleDateString("it-IT",{month:"long"});
+  const cap = t => t.charAt(0).toUpperCase()+t.slice(1);
   const KINDS=[["res","Resistance"],["muay","Muay Thai"],["cardio","Cardio"],["contrast","Contrasto"]];
   function mixBlock(){
     const y=stMonth.getFullYear(), m=stMonth.getMonth(), c=C.mix(S.days,y,m), tot=KINDS.reduce((s,[k])=>s+c[k],0);
     const now = tot
-      ? `<div class="st-stack">${KINDS.filter(([k])=>c[k]).map(([k])=>`<span class="c-${k}" style="flex:${c[k]}"></span>`).join("")}</div>
+      ? `<div class="st-stack">${KINDS.filter(([k])=>c[k]).map(([k,l])=>`<span class="c-${k}" style="flex:${c[k]}" data-tip="${cap(monLong(stMonth))} · ${l} ${c[k]}"></span>`).join("")}</div>
          <div class="st-leg">${KINDS.map(([k,l])=>`<span><i class="c-${k}"></i>${l} ${c[k]}</span>`).join("")}</div>
          <p class="st-note">Resistance: Gambe ${c.g2} · Torso ${c.g4} · Braccia ${c.g7}</p>`
       : `<p class="st-note">Nessuna attività in questo mese.</p>`;
     const months=[5,4,3,2,1,0].map(i=>{ const d=new Date(y,m-i,1); return { d, c:C.mix(S.days,d.getFullYear(),d.getMonth()) }; });
     const max=Math.max(1,...months.map(o=>KINDS.reduce((s,[k])=>s+o.c[k],0)));
-    const cols=months.map(o=>{ const t=KINDS.reduce((s,[k])=>s+o.c[k],0);
-      return `<div class="st-col"><div class="st-track"><div class="st-colbar" style="height:${t/max*100}%">${KINDS.filter(([k])=>o.c[k]).map(([k])=>`<span class="c-${k}" style="flex:${o.c[k]}"></span>`).join("")}</div></div><small>${o.d.toLocaleDateString("it-IT",{month:"short"}).replace(".","")}</small></div>`; }).join("");
+    const cols=months.map(o=>{ const t=KINDS.reduce((s,[k])=>s+o.c[k],0), name=cap(monLong(o.d));
+      // the track carries the whole month, used when a coloured band is too thin to tap
+      const sum = t ? `${name} · `+KINDS.filter(([k])=>o.c[k]).map(([k,l])=>`${l} ${o.c[k]}`).join(", ") : `${name} · nessuna attività`;
+      return `<div class="st-col"><div class="st-track" data-tip="${sum}"><div class="st-colbar" style="height:${t/max*100}%">${KINDS.filter(([k])=>o.c[k]).map(([k,l])=>`<span class="c-${k}" style="flex:${o.c[k]}" data-tip="${name} · ${l} ${o.c[k]}"></span>`).join("")}</div></div><small>${monShort(o.d)}</small></div>`; }).join("");
     return `${now}<p class="st-note">Ultimi 6 mesi</p><div class="st-cols">${cols}</div>`;
   }
   function lineSvg(s){
-    const W=300, H=150, L=36, R=8, T=12, B=22, t0=+new Date(s[0].d), t1=+new Date(s[s.length-1].d), span=(t1-t0)||1;
+    const W=300, H=150, L=36, R=8, T=12, B=24, t0=+parse(s[0].d), t1=+parse(s[s.length-1].d), span=(t1-t0)||1;
     const kgs=s.map(x=>x.kg), lo0=Math.min(...kgs), hi0=Math.max(...kgs), pad=(hi0-lo0||hi0*0.1||1)*0.15, lo=lo0-pad, hi=hi0+pad;
-    const X=x=>s.length===1 ? (L+W-R)/2 : L+(+new Date(x.d)-t0)/span*(W-L-R);
+    const X=d=>s.length===1 ? (L+W-R)/2 : L+(+parse(d)-t0)/span*(W-L-R);
     const Y=kg=>T+(hi-kg)/(hi-lo)*(H-T-B);
-    const pts=s.map(x=>`${X(x).toFixed(1)},${Y(x.kg).toFixed(1)}`).join(" ");
+    const pts=s.map(x=>`${X(x.d).toFixed(1)},${Y(x.kg).toFixed(1)}`).join(" ");
+    // ticks: first day of each month in range, or Mondays when the history is shorter than ~2 months
+    const ticks=[], monthly=span>56*864e5;
+    if(s.length>1){
+      if(monthly){ const d=parse(s[0].d); d.setDate(1); d.setMonth(d.getMonth()+1);
+        for(; +d<=t1; d.setMonth(d.getMonth()+1)) ticks.push({ d:new Date(d), lbl: monShort(d)+(d.getMonth()===0?" "+String(d.getFullYear()).slice(2):"") }); }
+      else { let mon=C.mondayOf(s[0].d); if(+parse(mon)<t0) mon=C.addDays(mon,7);
+        for(; +parse(mon)<=t1; mon=C.addDays(mon,7)) ticks.push({ d:parse(mon), lbl: fmtDate(mon) }); }
+    }
+    const every=Math.max(1,Math.ceil(ticks.length*34/(W-L-R)));   // keep labels at least ~34px apart
+    const axis=ticks.map((t,i)=>{ const x=X(ymdLocal(t.d)).toFixed(1);
+      return `<line class="st-tick" x1="${x}" x2="${x}" y1="${H-B}" y2="${H-B+4}"></line>`+(i%every===0?`<text class="st-t" x="${x}" y="${H-B+15}" text-anchor="middle">${t.lbl}</text>`:""); }).join("");
+    // one vertical band per session, split halfway between neighbours: the nearest point always wins
+    const xs=s.map(x=>X(x.d));
+    const hits=s.map((x,i)=>{ const a=i?(xs[i-1]+xs[i])/2:L, b=i<s.length-1?(xs[i]+xs[i+1])/2:W-R;
+      return `<rect class="st-hit" data-dot="${i}" x="${a.toFixed(1)}" y="${T}" width="${Math.max(b-a,1).toFixed(1)}" height="${H-B-T}" data-tip="${fmtDate(x.d)} · ${fmt(x.kg)} kg"></rect>`; }).join("");
     return `<svg class="st-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Peso per sessione">
       <line class="st-axis" x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}"></line>
       <line class="st-grid" x1="${L}" x2="${W-R}" y1="${Y(hi0)}" y2="${Y(hi0)}"></line>
       ${lo0!==hi0?`<line class="st-grid" x1="${L}" x2="${W-R}" y1="${Y(lo0)}" y2="${Y(lo0)}"></line><text class="st-t" x="${L-6}" y="${Y(lo0)+3}" text-anchor="end">${fmt(lo0)}</text>`:""}
       <text class="st-t" x="${L-6}" y="${Y(hi0)+3}" text-anchor="end">${fmt(hi0)}</text>
-      ${s.length>1?`<polyline class="st-line" points="${pts}"></polyline>`:""}
-      ${s.map(x=>`<circle class="st-dot" cx="${X(x).toFixed(1)}" cy="${Y(x.kg).toFixed(1)}" r="3.5"><title>${fmtDate(x.d)}: ${fmt(x.kg)} kg</title></circle>`).join("")}
-      <text class="st-t" x="${L}" y="${H-5}">${fmtDate(s[0].d)}</text>
-      ${s.length>1?`<text class="st-t" x="${W-R}" y="${H-5}" text-anchor="end">${fmtDate(s[s.length-1].d)}</text>`:""}
+      ${axis}
+      ${s.length>1?`<polyline class="st-line" points="${pts}"></polyline>`:`<text class="st-t" x="${X(s[0].d)}" y="${H-B+15}" text-anchor="middle">${fmtDate(s[0].d)}</text>`}
+      ${s.map((x,i)=>`<circle class="st-dot" data-i="${i}" cx="${X(x.d).toFixed(1)}" cy="${Y(x.kg).toFixed(1)}" r="3.5"></circle>`).join("")}
+      ${hits}
     </svg>`;
   }
   function loadBlock(){
@@ -191,7 +223,33 @@ if(typeof document !== "undefined"){
       +(p.stuck?`<p class="st-warn">Fermo a ${fmt(p.last)} kg da ${p.stuck} settimane: valuta di alzare il peso.</p>`:"");
   }
 
+  const tip=document.createElement("div"); tip.id="st-tip"; tip.setAttribute("role","status"); document.body.appendChild(tip);
+  let tipEl=null, lastPointer="mouse";
+  // a session band points at its dot: the label sits on the dot and the dot is highlighted
+  const dotOf = el => el.dataset.dot!=null ? el.ownerSVGElement.querySelector(`.st-dot[data-i="${el.dataset.dot}"]`) : null;
+  function hideTip(){ tip.classList.remove("on"); if(tipEl){ tipEl.classList.remove("tip-on"); const d=dotOf(tipEl); if(d) d.classList.remove("tip-on"); } tipEl=null; }
+  function showTip(el){
+    if(tipEl===el) return;
+    hideTip();
+    tipEl=el; el.classList.add("tip-on"); tip.textContent=el.dataset.tip; tip.classList.add("on");
+    const dot=dotOf(el); if(dot) dot.classList.add("tip-on");
+    const r=(dot||el).getBoundingClientRect(), w=tip.offsetWidth, h=tip.offsetHeight;
+    let top=r.top-h-8; if(top<8) top=r.bottom+8;
+    tip.style.left=Math.min(Math.max(8, r.left+r.width/2-w/2), innerWidth-w-8)+"px"; tip.style.top=top+"px";
+  }
+  function tipTarget(t){
+    let el=t.closest&&t.closest("#stats [data-tip]"); if(!el) return null;
+    if(lastPointer!=="mouse"){ const r=el.getBoundingClientRect(), up=el.parentElement&&el.parentElement.closest("[data-tip]");
+      if(up && Math.min(r.width,r.height)<14) el=up; }
+    return el;
+  }
+  document.addEventListener("pointerdown", ev=>{ lastPointer=ev.pointerType||"mouse"; }, true);
+  document.addEventListener("pointerover", ev=>{ if(ev.pointerType!=="mouse") return; const el=tipTarget(ev.target); el ? showTip(el) : hideTip(); });
+  document.addEventListener("click", ev=>{ if(lastPointer==="mouse") return; const el=tipTarget(ev.target); if(el && el!==tipEl) showTip(el); else hideTip(); });
+  addEventListener("scroll", hideTip, {passive:true});
+
   window.renderStats = function(el){
+    hideTip();
     const mName=stMonth.toLocaleDateString("it-IT",{month:"long",year:"numeric"});
     const monShort=stMonth.toLocaleDateString("it-IT",{month:"long"});
     const panel=(k,title,sub,body)=>`<details class="panel" data-k="${k}"${OPEN.has(k)?" open":""}><summary><h3>${title}</h3><span>${sub}</span></summary><div class="panel-body">${body}</div></details>`;
