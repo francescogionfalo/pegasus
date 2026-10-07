@@ -11,10 +11,24 @@
 <meta name="apple-mobile-web-app-title" content="Pegasus">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png?v=2">
+<!-- iOS launch screens: plain black so the app opens on black instead of white, one per iPhone size -->
+<link rel="apple-touch-startup-image" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="icons/launch/launch-640x1136.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="icons/launch/launch-750x1334.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch/launch-1242x2208.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch/launch-1125x2436.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="icons/launch/launch-828x1792.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch/launch-1242x2688.png">
+<link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch/launch-1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch/launch-1284x2778.png">
+<link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch/launch-1179x2556.png">
+<link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch/launch-1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch/launch-1206x2622.png">
+<link rel="apple-touch-startup-image" media="(device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch/launch-1260x2736.png">
+<link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch/launch-1320x2868.png">
 <link rel="icon" href="icons/icon-192.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<script>try{if(sessionStorage.getItem("pg-splash"))document.documentElement.classList.add("no-splash")}catch(e){}</script>
+<script>try{document.documentElement.classList.add(sessionStorage.getItem("pg-splash")?"no-splash":"booting")}catch(e){document.documentElement.classList.add("booting")}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap">
 <style>
 /* Layout: a single phone column, sticky week strip + day tabs, one card per exercise, rest timer docked at the bottom. Plate colors code the exercise type. */
@@ -292,6 +306,7 @@ p.legend{margin:6px 0 0}
 #splash{position:fixed;inset:0;z-index:100;background:#000;display:grid;place-items:center;transition:opacity .5s ease;cursor:pointer}
 #splash.out{opacity:0;pointer-events:none}
 .no-splash #splash{display:none}
+html.booting{background:#000}
 .sp-in{display:flex;flex-direction:column;align-items:center;gap:16px;animation:sp-in .4s cubic-bezier(.2,.7,.2,1) both}
 .sp-in svg{width:128px;height:128px;fill:#F0594C}
 .sp-in b{font-family:var(--f-display);font-weight:800;font-size:30px;letter-spacing:.32em;padding-left:.32em;color:#fff}
@@ -354,7 +369,8 @@ p.legend{margin:6px 0 0}
   if(document.documentElement.classList.contains("no-splash")){ sp.remove(); return; }
   try{ sessionStorage.setItem("pg-splash","1"); }catch(e){}
   const still=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const done=()=>{ if(!sp.isConnected||sp.classList.contains("out")) return; sp.classList.add("out"); setTimeout(()=>sp.remove(), still?0:500); };
+  const done=()=>{ if(!sp.isConnected||sp.classList.contains("out")) return; sp.classList.add("out");
+    setTimeout(()=>{ sp.remove(); document.documentElement.classList.remove("booting"); }, still?0:500); };
   const t=setTimeout(done, still?600:1000);
   sp.addEventListener("pointerdown",()=>{ clearTimeout(t); done(); },{once:true});
 })();
