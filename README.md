@@ -31,3 +31,8 @@ Ogni volta che pubblichi una modifica, alza `VERSION` in `sw.js`, così il telef
 ## Backup
 
 Ogni volta che segni un giorno come fatto si apre da solo il salvataggio del backup: scegli "Salva su File" e una cartella di iCloud Drive. Ogni file contiene tutto lo storico, quindi basta sempre il più recente. In fondo alla pagina: **Esporta backup** salva un file JSON (scegli "Salva su File" e mettilo su iCloud Drive). **Importa backup** lo ripristina, per esempio su un telefono nuovo.
+
+## Crediti
+
+- Icone delle attività: [Material Symbols](https://fonts.google.com/icons) di Google, licenza Apache 2.0.
+- Foto degli esercizi: [free-exercise-db](https://github.com/yuhonas/free-exercise-db), dominio pubblico (Unlicense).

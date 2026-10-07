@@ -60,7 +60,7 @@ h1 small{display:block;font-size:13px;font-weight:600;letter-spacing:.14em;color
 .wd.on span,.wd.on small{color:var(--bg)}
 .wd.today b{text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:3px;text-underline-offset:3px}
 /* day colour follows the activity type; several different types in one day = green */
-.k-res{--kc:var(--red)} .k-muay{--kc:var(--blue)} .k-cardio{--kc:var(--yellow)} .k-contrast{--kc:var(--purple)} .k-mix{--kc:var(--green)}
+.k-res{--kc:var(--red)} .k-muay{--kc:var(--blue)} .k-cardio{--kc:var(--yellow)} .k-contrast{--kc:var(--purple)} .k-mix{--kc:var(--green)} .k-rest{--kc:var(--muted)}
 .wd.done{background:var(--kc);border-color:var(--kc);color:var(--surface)}
 .wd.done span,.wd.done small{color:var(--surface)}
 .wd.done.k-cardio,.wd.done.k-cardio span,.wd.done.k-cardio small,.cd.done.k-cardio{color:#11161B}
@@ -215,7 +215,14 @@ p.legend{margin:6px 0 0}
 .choose{background:var(--sunk);border:1.5px dashed var(--line);border-radius:var(--r);padding:14px}
 .choose h3{margin:0;font-family:var(--f-display);font-size:21px;font-weight:800;text-transform:uppercase}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.opt{min-height:60px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);font-family:var(--f-display);font-size:19px;font-weight:700;text-transform:uppercase;line-height:1.05;text-align:left;padding:8px 12px;display:flex;flex-direction:column;justify-content:center;gap:3px}
+.opt{min-height:60px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);font-family:var(--f-display);font-size:19px;font-weight:700;text-transform:uppercase;line-height:1.05;text-align:left;padding:8px 10px;display:flex;align-items:center;gap:10px}
+.opt-t{display:flex;flex-direction:column;gap:3px;min-width:0}
+/* activity icon: tinted tile in the activity colour (k-* sets --kc) */
+.ic{flex:none;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:color-mix(in srgb,var(--kc) 16%,transparent)}
+.ic svg{width:22px;height:22px;fill:var(--kc)}
+.act-t{display:flex;align-items:center;gap:10px;min-width:0}
+.act-h .ic{width:40px;height:40px} .act-h .ic svg{width:26px;height:26px}
+.hact h4{display:flex;align-items:center;gap:8px} .hact h4 .ic{width:28px;height:28px;border-radius:7px} .hact h4 .ic svg{width:18px;height:18px}
 .opt small{font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--green)}
 .opt.sug{border-color:var(--green);box-shadow:inset 0 0 0 1px var(--green)}
 .addact{display:block;width:100%;min-height:54px;border:1.5px dashed var(--line);border-radius:14px;font-family:var(--f-display);font-size:19px;font-weight:700;text-transform:uppercase;color:var(--muted)}
@@ -405,6 +412,16 @@ const ACT = {
   muay:{l:"Muay Thai",s:"Muay",i:"MT"}, cardio:{l:"Cardio",s:"Cardio",i:"C"},
   contrast:{l:"Terapia di contrasto",s:"Contr.",i:"TC"}, rest:{l:"Riposo",s:"Riposo",i:"R"}};
 DAYS.forEach(d=>ACT[d.id]={l:"Resistance: "+d.tab,s:d.tab,i:d.tab[0],gym:true});
+// Activity icons: Material Symbols Rounded (Google, Apache 2.0), inlined so they work offline.
+// muay: sports_martial_arts, res: exercise, cardio: sprint, contrast: hot_tub, rest: hotel
+const ICON_PATH = {
+  muay:"M510-464 491-69q-1 12-10 20.5T458-40q-12 0-20.5-8.5T428-69l-18-357-163-94-19 68 63 111q6 11 3.5 22.5T281-301q-11 6-23 3t-18-14l-71-120q-3-5-4-11t1-12l43-152 237-137-91-91q-9-9-9-21t9-21q9-9 21-9t21 9l119 118q11 11 9 25.5T510-711l-111 63 85 69 299-266q8-7 19-6.5t20 9.5q8 8 8.5 18.5T823-805L510-464ZM193-677q-30 0-51.5-21.5T120-750q0-30 21.5-51.5T193-823q30 0 51.5 21.5T266-750q0 30-21.5 51.5T193-677Z",
+  res:"m826-585-42-42 45-45-157-157-45 45-43-43 30-31q23-23 57-22.5t57 23.5l129 129q23 23 23 56.5T857-615l-31 30ZM346-104q-23 23-56.5 23T233-104L90-247q-17-17.38-17-42.69T90-332l44-44 43 42-45 45 157 157 45-45 42 43-30 30Zm397-308 85-85-331-331-85 85 331 331ZM463-132l86-86-331-331-86 86 331 331Zm9-248 109-109-92-92-109 109 92 92Zm33 290q-16.93 17-41.97 17Q438-73 421-90L90-421q-17-16.93-17-41.97Q73-488 90-505l85-86q17.38-17 42.69-17T260-591l77 77 110-110-77-77q-17-16.93-17-41.97Q353-768 370-785l85-86q17.38-17 42.69-17T540-871l331 331q17 17.38 17 42.69T871-455l-86 85q-16.93 17-41.97 17Q718-353 701-370l-77-77-110 110 77 77q17 17.38 17 42.69T591-175l-86 85Z",
+  cardio:"M482-425 237-181q-8.8 9-20.9 9-12.1 0-21.1-9.05-9-9.06-9-21.5 0-12.45 9-21.45l387-386H440v50q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-80q0-12.75 8.63-21.38Q397.25-670 410-670h198q12.09 0 23.04 5Q642-660 650-652l123 121q23 23 52.5 37t61.5 20q12.95 2.25 22.48 11.62Q919-453 917-440q-2 14-12.5 21t-24.5 5q-41-6-77.5-22.5T736-484l-46-46-114 114 58 58q11 11 9 25t-15 22L444-204q-11 6-23.12 2.89-12.12-3.11-18-14Q397-226 400-238t14-18l150-87-82-82Zm-332-15q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h140q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H150ZM70-570q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32Q57.25-630 70-630h140q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H70Zm720-80q-28.52 0-49.26-20.59T720-720.09q0-28.91 20.74-49.41Q761.48-790 790-790t49.26 20.59Q860-748.82 860-719.91t-20.74 49.41Q818.52-650 790-650Zm-640-50q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h140q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H150Z",
+  contrast:"M266-627q-29 0-49-20t-20-49q0-29 20-49t49-20q29 0 49 20t20 49q0 29-20 49t-49 20ZM140-80q-25 0-42.5-17.5T80-140v-283q0-13 8.5-21.5T110-453h92v-56q0-31 21.5-53t52.5-22q18 0 34.5 8t28.5 22l57 64q10 11 21 20t23 17h410q13 0 21.5 8.5T880-423v283q0 25-17.5 42.5T820-80H140Zm630-480q-11 0-19-8.5t-9-19.5q-2-28-13-52.5T702-688q-20-27-31-58.5T660-812q0-11 8.5-19.5T688-840q11 0 18.5 8.5T715-812q1 26 10 50.5t25 44.5q22 28 34.5 61t12.5 68q0 11-8 19.5t-19 8.5Zm-160 0q-11 0-19-8.5t-9-19.5q-2-28-13-52.5T542-688q-20-27-31-58.5T500-812q0-11 8.5-19.5T528-840q11 0 18.5 8.5T555-812q1 26 10 50.5t25 44.5q22 28 34.5 61t12.5 68q0 11-8 19.5t-19 8.5Zm70 420h110v-253H680v253Zm-170 0h110v-253H510v253Zm-170 0h110v-253H340v253Zm-170 0h110v-253H170v253Z",
+  rest:"M69.82-200Q57-200 48.5-208.63 40-217.25 40-230v-525q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v364h353v-249q0-24.75 17.63-42.38Q488.25-700 513-700h262q59.81 0 102.41 42.59Q920-614.81 920-555v325q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-101H100v101q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63ZM194.5-479.5Q164-510 164-555t30.5-75.5Q225-661 270-661t75.5 30.5Q376-600 376-555t-30.5 75.5Q315-449 270-449t-75.5-30.5ZM513-391h347v-164q0-35.06-24.97-60.03T775-640H513v249ZM302.5-522.5Q316-536 316-555t-13.5-32.5Q289-601 270-601t-32.5 13.5Q224-574 224-555t13.5 32.5Q251-509 270-509t32.5-13.5ZM270-555Zm243-85v249-249Z"};
+const kindOf = k => isGym(k)||k==="res" ? "res" : k;
+const icon = k => `<span class="ic k-${kindOf(k)}" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="${ICON_PATH[kindOf(k)]}"></path></svg></span>`;
 // Huberman plan, Monday first: shown as a suggestion only, the day is whatever gets recorded.
 const SUG = ["muay","g2","muay","g4","muay","contrast","g7"];
 
@@ -606,7 +623,7 @@ function exCard(e,i,date){
   </details>`;
 }
 const doneBtn = (a,i) => `<button class="daydone${a.done?" on":""}" data-done="${i}" aria-pressed="${a.done}">${a.done?"✓ Realizzato<small>Tocca per annullare</small>":"Segna come realizzato<small>Si apre il salvataggio del backup</small>"}</button>`;
-const actHead = (a,i,kicker) => `<div class="act-h"><div><small>${kicker}</small><h3>${isGym(a.k)?ACT[a.k].s:ACT[a.k].l}</h3></div><button class="rm" data-rm="${i}">Rimuovi</button></div>`;
+const actHead = (a,i,kicker) => `<div class="act-h"><div class="act-t">${icon(a.k)}<div><small>${kicker}</small><h3>${isGym(a.k)?ACT[a.k].s:ACT[a.k].l}</h3></div></div><button class="rm" data-rm="${i}">Rimuovi</button></div>`;
 function workout(a,i){
   const d=DAYS.find(x=>x.id===a.k), date=sel;
   const sets=id=>((peek(date,id)||{}).sets||[]).filter(Boolean).length;
@@ -636,7 +653,8 @@ function workout(a,i){
 }
 function chooser(r){
   const sg=SUG[dow(sel)], free=k=>!has(r,k);
-  const opt=(k,label,attr)=>`<button class="opt${k===sg||(k==="res"&&isGym(sg))?" sug":""}" ${attr}>${label}${k===sg||(k==="res"&&isGym(sg))?"<small>Consigliato</small>":""}</button>`;
+  const opt=(k,label,attr)=>{ const s=k===sg||(k==="res"&&isGym(sg));
+    return `<button class="opt${s?" sug":""}" ${attr}>${icon(k)}<span class="opt-t">${label}${s?"<small>Consigliato</small>":""}</span></button>`; };
   const cancel = r&&r.acts.length ? `<button class="rm" data-pick="">Annulla</button>` : "";
   if(pick==="res") return `<div class="choose"><div class="act-h"><h3>Resistance training</h3><button class="rm" data-pick="main">‹ Indietro</button></div>
     <div class="opts">${DAYS.filter(d=>free(d.id)).map(d=>opt(d.id,d.tab,`data-add="${d.id}"`)).join("")}</div></div>`;
@@ -691,13 +709,13 @@ function histDay(date){
     if(isGym(a.k)){
       const exs=DAYS.find(d=>d.id===a.k).ex.filter(e=>r.ex[e.id]);
       const nSets=exs.reduce((t,e)=>t+(r.ex[e.id].sets||[]).filter(Boolean).length,0), nDone=exs.filter(e=>r.ex[e.id].done).length;
-      body = !exs.length ? `<p>Nessun esercizio o serie segnati: registrato solo l'allenamento.</p>`
+      body = !exs.length ? `<p>${a.done?"Nessun esercizio o serie segnati: registrato solo l'allenamento.":"Nessun esercizio o serie segnati."}</p>`
         : `<p class="num">${nDone} eserciz${nDone===1?"io":"i"} fatt${nDone===1?"o":"i"} · ${nSets} serie di lavoro</p>
           <ul>${exs.map(e=>{ const x=r.ex[e.id], n=(x.sets||[]).filter(Boolean).length, unit=/^(per |totale)/.test(e.unit)?" "+e.unit:"";
             const info=[x.kg!=null?fmt(x.kg)+" kg"+unit:(e.kg==null?"corpo libero":""), n?`${n} di ${e.sets} serie`:""].filter(Boolean).join(" · ");
             return `<li class="${x.done?"":"no"}"><div><b>${x.done?"✓ ":""}${e.name}</b>${info?`<small>${info}</small>`:""}</div></li>`; }).join("")}</ul>`;
     }
-    return `<div class="hact"><div class="hact-h"><h4>${ACT[a.k].l}</h4>${st}</div>${body}</div>`;
+    return `<div class="hact"><div class="hact-h"><h4>${icon(a.k)}${ACT[a.k].l}</h4>${st}</div>${body}</div>`;
   }).join("");
   return `<div class="hday"><h3>${fmtLong(date)}</h3>${acts}</div>`;
 }
