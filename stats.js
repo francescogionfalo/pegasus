@@ -125,7 +125,7 @@ if(typeof document !== "undefined"){
   function costanza(){
     const W=300, H=120, B=16, T=14, weeks=C.lastWeeks(S.days,goal(),today()), bw=W/weeks.length;
     const y=n=>T+(1-n/7)*(H-T-B);
-    const bars=weeks.map((w,i)=>{ const x=i*bw+3, top=y(w.n), cls=w.ok?"ok":w.current?"now":"miss";
+    const bars=weeks.map((w,i)=>{ const x=i*bw+3, top=y(w.n), cls=w.current?"now":w.ok?"ok":"miss";
       return `<rect class="st-bar ${cls}" x="${x}" y="${top}" width="${bw-6}" height="${Math.max(H-B-top,0)}" rx="3"></rect>`
         +(w.n?`<text class="st-t" x="${x+(bw-6)/2}" y="${top-3}" text-anchor="middle">${w.n}</text>`:"");
     }).join("");
@@ -152,7 +152,7 @@ if(typeof document !== "undefined"){
     const months=[5,4,3,2,1,0].map(i=>{ const d=new Date(y,m-i,1); return { d, c:C.mix(S.days,d.getFullYear(),d.getMonth()) }; });
     const max=Math.max(1,...months.map(o=>KINDS.reduce((s,[k])=>s+o.c[k],0)));
     const cols=months.map(o=>{ const t=KINDS.reduce((s,[k])=>s+o.c[k],0);
-      return `<div class="st-col"><div class="st-colbar" style="height:${t/max*100}%">${KINDS.filter(([k])=>o.c[k]).map(([k])=>`<span class="c-${k}" style="flex:${o.c[k]}"></span>`).join("")}</div><small>${o.d.toLocaleDateString("it-IT",{month:"short"}).replace(".","")}</small></div>`; }).join("");
+      return `<div class="st-col"><div class="st-track"><div class="st-colbar" style="height:${t/max*100}%">${KINDS.filter(([k])=>o.c[k]).map(([k])=>`<span class="c-${k}" style="flex:${o.c[k]}"></span>`).join("")}</div></div><small>${o.d.toLocaleDateString("it-IT",{month:"short"}).replace(".","")}</small></div>`; }).join("");
     return `${now}<p class="st-note">Ultimi 6 mesi</p><div class="st-cols">${cols}</div>`;
   }
   function loadBlock(){ return ""; }
