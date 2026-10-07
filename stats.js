@@ -122,8 +122,39 @@ if(typeof document !== "undefined"){
       <div class="kpi"><b class="num">${up}</b><small>Carichi aumentati</small></div>
     </div>`;
   }
-  function costanza(){ return ""; }
-  function mixBlock(){ return ""; }
+  function costanza(){
+    const W=300, H=120, B=16, T=14, weeks=C.lastWeeks(S.days,goal(),today()), bw=W/weeks.length;
+    const y=n=>T+(1-n/7)*(H-T-B);
+    const bars=weeks.map((w,i)=>{ const x=i*bw+3, top=y(w.n), cls=w.ok?"ok":w.current?"now":"miss";
+      return `<rect class="st-bar ${cls}" x="${x}" y="${top}" width="${bw-6}" height="${Math.max(H-B-top,0)}" rx="3"></rect>`
+        +(w.n?`<text class="st-t" x="${x+(bw-6)/2}" y="${top-3}" text-anchor="middle">${w.n}</text>`:"");
+    }).join("");
+    const gy=y(goal());
+    return `<svg class="st-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Giorni allenati nelle ultime 12 settimane, obiettivo ${goal()}">
+        <defs><pattern id="st-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" style="fill:var(--green);opacity:.35"></rect><rect width="3" height="6" style="fill:var(--green)"></rect></pattern></defs>
+        <line class="st-axis" x1="0" x2="${W}" y1="${H-B}" y2="${H-B}"></line>
+        ${bars}
+        <line class="st-goal" x1="0" x2="${W}" y1="${gy}" y2="${gy}"></line>
+        <text class="st-t goal" x="${W}" y="${gy-3}" text-anchor="end">obiettivo ${goal()}</text>
+        <text class="st-t" x="0" y="${H-3}">${fmtDate(weeks[0].mon)}</text>
+        <text class="st-t" x="${W}" y="${H-3}" text-anchor="end">settimana in corso</text>
+      </svg>
+      <div class="stp"><span>Obiettivo settimanale</span><span class="stp-c"><button class="navb" data-goal="-1" aria-label="Riduci obiettivo">−</button><b class="num">${goal()}</b> giorni<button class="navb" data-goal="1" aria-label="Aumenta obiettivo">+</button></span></div>`;
+  }
+  const KINDS=[["res","Resistance"],["muay","Muay Thai"],["cardio","Cardio"],["contrast","Contrasto"]];
+  function mixBlock(){
+    const y=stMonth.getFullYear(), m=stMonth.getMonth(), c=C.mix(S.days,y,m), tot=KINDS.reduce((s,[k])=>s+c[k],0);
+    const now = tot
+      ? `<div class="st-stack">${KINDS.filter(([k])=>c[k]).map(([k])=>`<span class="c-${k}" style="flex:${c[k]}"></span>`).join("")}</div>
+         <div class="st-leg">${KINDS.map(([k,l])=>`<span><i class="c-${k}"></i>${l} ${c[k]}</span>`).join("")}</div>
+         <p class="st-note">Resistance: Gambe ${c.g2} · Torso ${c.g4} · Braccia ${c.g7}</p>`
+      : `<p class="st-note">Nessuna attività in questo mese.</p>`;
+    const months=[5,4,3,2,1,0].map(i=>{ const d=new Date(y,m-i,1); return { d, c:C.mix(S.days,d.getFullYear(),d.getMonth()) }; });
+    const max=Math.max(1,...months.map(o=>KINDS.reduce((s,[k])=>s+o.c[k],0)));
+    const cols=months.map(o=>{ const t=KINDS.reduce((s,[k])=>s+o.c[k],0);
+      return `<div class="st-col"><div class="st-colbar" style="height:${t/max*100}%">${KINDS.filter(([k])=>o.c[k]).map(([k])=>`<span class="c-${k}" style="flex:${o.c[k]}"></span>`).join("")}</div><small>${o.d.toLocaleDateString("it-IT",{month:"short"}).replace(".","")}</small></div>`; }).join("");
+    return `${now}<p class="st-note">Ultimi 6 mesi</p><div class="st-cols">${cols}</div>`;
+  }
   function loadBlock(){ return ""; }
 
   window.renderStats = function(el){
