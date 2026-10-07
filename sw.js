@@ -1,9 +1,9 @@
 // Offline cache. Bump VERSION on every deploy so phones pick up the new files.
-const VERSION = "v15";
+const VERSION = "v16";
 const CACHE = "huberman-gym-" + VERSION;
 // Exercise photos (img/ex/<id>-0.jpg and -1.jpg): precached so they work offline in the gym.
 const EX = ["legpress","rdl","hack","legext","legcurl","calf","kickback","chestpress","incdb","pecdeck","latpd","row","sapd","cablecrunch","hlr","ohp","lateral","reardelt","inccurl","cablecurl","pushdown","ohext","abwheel","wrist"];
-const CORE = ["./", "index.html", "manifest.webmanifest", "stats.js", "icons/icon-180.png", "icons/icon-192.png", "icons/icon-512.png",
+const CORE = ["./", "index.html", "manifest.webmanifest", "stats.js", "icons/icon-180.png?v=2", "icons/icon-192.png?v=2", "icons/icon-512.png?v=2",
   ...EX.flatMap(id => [`img/ex/${id}-0.jpg`, `img/ex/${id}-1.jpg`])];
 
 self.addEventListener("install", e => {
