@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION on every deploy so phones pick up the new files.
-const VERSION = "v10";
+const VERSION = "v11";
 const CACHE = "huberman-gym-" + VERSION;
 // Exercise photos (img/ex/<id>-0.jpg and -1.jpg): precached so they work offline in the gym.
 const EX = ["legpress","rdl","hack","legext","legcurl","calf","kickback","chestpress","incdb","pecdeck","latpd","row","sapd","cablecrunch","hlr","ohp","lateral","reardelt","inccurl","cablecurl","pushdown","ohext","abwheel","wrist"];

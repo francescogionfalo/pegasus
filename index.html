@@ -19,7 +19,7 @@
 /* Layout: a single phone column, sticky week strip + day tabs, one card per exercise, rest timer docked at the bottom. Plate colors code the exercise type. */
 :root{
   --bg:#E9EDF0; --surface:#FFFFFF; --sunk:#F3F5F7; --ink:#11161B; --muted:#5A6570; --line:#D3DAE0;
-  --red:#D2382C; --blue:#1F5ED0; --yellow:#D9A215; --green:#1F8A55;
+  --red:#D2382C; --blue:#1F5ED0; --yellow:#D9A215; --green:#1F8A55; --purple:#7B4FC9;
   --on-red:#FFFFFF;
   --f-display:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;
   --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -27,10 +27,10 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0E1215; --surface:#171C21; --sunk:#1E242A; --ink:#E7ECEF; --muted:#8E9AA5; --line:#2A333B;
-  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --on-red:#140705; color-scheme:dark}}
+  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --purple:#A88BEA; --on-red:#140705; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0E1215; --surface:#171C21; --sunk:#1E242A; --ink:#E7ECEF; --muted:#8E9AA5; --line:#2A333B;
-  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --on-red:#140705; color-scheme:dark}
+  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --purple:#A88BEA; --on-red:#140705; color-scheme:dark}
 
 *{box-sizing:border-box}
 html{color-scheme:light;-webkit-text-size-adjust:100%}
@@ -59,10 +59,14 @@ h1 small{display:block;font-size:13px;font-weight:600;letter-spacing:.14em;color
 .wd.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .wd.on span,.wd.on small{color:var(--bg)}
 .wd.today b{text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:3px;text-underline-offset:3px}
-.wd.done{background:var(--green);border-color:var(--green);color:var(--surface)}
+/* day colour follows the activity type; several different types in one day = green */
+.k-res{--kc:var(--red)} .k-muay{--kc:var(--blue)} .k-cardio{--kc:var(--yellow)} .k-contrast{--kc:var(--purple)} .k-mix{--kc:var(--green)}
+.wd.done{background:var(--kc);border-color:var(--kc);color:var(--surface)}
 .wd.done span,.wd.done small{color:var(--surface)}
+.wd.done.k-cardio,.wd.done.k-cardio span,.wd.done.k-cardio small,.cd.done.k-cardio{color:#11161B}
 .wd span.sug{font-weight:400;opacity:.55}
-.wd.part{border:2px solid var(--green)}
+.wd.part{border:2px solid var(--kc)}
+.wd.done.today b{text-decoration-color:currentColor}
 .wd.rest{background:var(--line);border-color:var(--line)}
 .wd.on.done{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
 .views{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--sunk);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:12px}
@@ -166,14 +170,14 @@ details.ex[open] .ex-sum::after{content:"−"}
 .cd.today::after{content:"";position:absolute;bottom:4px;width:5px;height:5px;border-radius:50%;background:currentColor}
 .cd{flex-direction:column;gap:1px;line-height:1}
 .cd i{font-style:normal;font-family:var(--f-body);font-size:9px;font-weight:600;letter-spacing:.02em;max-width:100%;overflow:hidden;white-space:nowrap}
-.cd.done{background:var(--green);border-color:var(--green);color:var(--surface)}
-.cd.part{border:2.5px solid var(--green)}
+.cd.done{background:var(--kc);border-color:var(--kc);color:var(--surface)}
+.cd.part{border:2.5px solid var(--kc)}
 .cd.rest{background:var(--line);border-color:var(--line)}
 .cd.today::after{bottom:3px}
 .cd.sel{outline:2.5px solid var(--ink);outline-offset:2px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:12px;color:var(--muted);margin-top:12px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.legend .sw.done{background:var(--green)} .legend .sw.part{background:none;border:2px solid var(--green)} .legend .sw.rest{background:var(--line)}
+.legend .sw.done{background:var(--kc)} .legend .sw.part{background:none;border:2px solid var(--muted)} .legend .sw.rest{background:var(--line)}
 p.legend{margin:6px 0 0}
 .hday{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-top:16px}
 .hday h3{font-family:var(--f-display);font-size:22px;font-weight:800;text-transform:uppercase;margin:0;line-height:1.05}
@@ -223,7 +227,7 @@ p.legend{margin:6px 0 0}
 .stp{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-top:12px;font-size:14px}
 .stp-c{display:flex;align-items:center;gap:8px}
 .stp-c b{font-family:var(--f-display);font-size:24px;font-weight:800}
-.c-res{background:var(--red)} .c-muay{background:var(--blue)} .c-cardio{background:var(--yellow)} .c-contrast{background:var(--muted)}
+.c-res{background:var(--red)} .c-muay{background:var(--blue)} .c-cardio{background:var(--yellow)} .c-contrast{background:var(--purple)}
 .st-stack{display:flex;height:18px;border-radius:9px;overflow:hidden;gap:2px;margin-top:4px}
 .st-leg{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:13px;color:var(--muted);margin-top:8px}
 .st-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
@@ -432,11 +436,14 @@ function tidy(date){
   if(!r.acts.length && !Object.keys(r.ex).length) delete S.days[date];
 }
 // Day status drives the colour of the week tile and the calendar cell.
+// Returns "done k-<type>", "part k-<type>" or "rest"; type is res/muay/cardio/contrast, or mix
+// when the day holds different types (two resistance workouts are still one type).
 function status(r){
   if(!r||!r.acts.length) return "";
-  if(r.acts.some(a=>a.done&&a.k!=="rest")) return "done";
-  if(r.acts.every(a=>a.k==="rest")) return "rest";
-  return "part";
+  const real=r.acts.filter(a=>a.k!=="rest"); if(!real.length) return "rest";
+  const done=real.filter(a=>a.done), st=done.length?"done":"part";
+  const types=new Set((done.length?done:real).map(a=>isGym(a.k)?"res":a.k));
+  return st+" k-"+(types.size>1?"mix":[...types][0]);
 }
 
 // Migration: set ticks used to live in a separate per-day session key.
@@ -659,7 +666,7 @@ function renderHist(){
     <div class="weeknav"><button class="navb" data-hm="-1" aria-label="Mese precedente">‹</button><span>${mName}</span><button class="navb" data-hm="1" aria-label="Mese successivo">›</button></div>
     <p class="cal-sum"><b>${trained}</b> giorn${trained===1?"o":"i"} di allenamento · ${cnt.res} resistance · ${cnt.muay} Muay Thai · ${cnt.cardio} cardio · ${cnt.contrast} contrasto</p>
     <div class="cal">${["L","M","M","G","V","S","D"].map(x=>`<span class="dow">${x}</span>`).join("")}${cells}</div>
-    <div class="legend"><span><i class="sw done"></i>Realizzato</span><span><i class="sw part"></i>Da realizzare</span><span><i class="sw rest"></i>Riposo</span></div>
+    <div class="legend"><span><i class="sw done k-res"></i>Resistance</span><span><i class="sw done k-muay"></i>Muay Thai</span><span><i class="sw done k-cardio"></i>Cardio</span><span><i class="sw done k-contrast"></i>Contrasto</span><span><i class="sw done k-mix"></i>Più attività</span><span><i class="sw rest"></i>Riposo</span><span><i class="sw part"></i>Da realizzare</span></div>
     <p class="legend">G Gambe · T Torso · B Braccia · MT Muay Thai · C Cardio · TC Contrasto · R Riposo</p>
     ${histDay(hSel)}`;
 }
