@@ -112,8 +112,17 @@ details.ex[open] .ex-sum::after{content:"−"}
 .ex-meta{display:block;font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ex-meta b{color:var(--green)}
 .ex-body{padding:0 14px 14px;display:flex;flex-direction:column;gap:12px}
-.frames{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.frames img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px;background:var(--sunk);display:block}
+/* exercise photo: press and hold to see start and end positions alternate in a zoomed overlay */
+.hold{position:relative;border-radius:10px;overflow:hidden;background:var(--sunk);cursor:pointer;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.hold img{width:100%;aspect-ratio:3/2;object-fit:cover;display:block;pointer-events:none}
+.hold-hint{position:absolute;right:8px;bottom:8px;font-size:11px;font-weight:600;letter-spacing:.04em;color:#fff;background:rgba(0,0,0,.55);padding:3px 9px;border-radius:999px;transition:transform .15s}
+.hold-hint.flash{transform:scale(1.15)}
+#holdview{position:fixed;inset:0;z-index:40;pointer-events:none}
+.hv-bg{position:absolute;inset:0;background:rgba(8,10,12,.65)}
+.hv-box{position:absolute;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.hv-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hv-box .f1{opacity:0;transition:opacity .5s ease-in-out}
+.hv-box.end .f1{opacity:1}
 .tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .tag i{width:11px;height:11px;border-radius:50%;border:2.5px solid currentColor;display:inline-block}
 .tag.c{color:var(--red)} .tag.i{color:var(--blue)} .tag.o{color:var(--yellow)}
@@ -304,6 +313,8 @@ p.legend{margin:6px 0 0}
     <label for="import">Importa backup<input type="file" id="import" accept="application/json,.json"></label>
   </div>
 </div>
+
+<div id="holdview" hidden><div class="hv-bg"></div><div class="hv-box"><img class="f0" alt=""><img class="f1" alt=""></div></div>
 
 <div class="timer" id="timer" aria-live="polite">
   <div class="timer-in">
@@ -580,7 +591,7 @@ function exCard(e,i,date){
       <div><span class="tag ${cls}"><i></i>${lbl}</span><h3>${e.name}</h3><span class="ex-meta num">${meta}</span></div>
       <button class="chk${x.done?" on":""}" data-x="${e.id}" aria-pressed="${!!x.done}" aria-label="${e.name}: ${x.done?"fatto, tocca per annullare":"segna come fatto"}">✓</button></summary>
     <div class="ex-body">
-    <div class="frames"><img src="${img(e.id,0)}" alt="${e.name}, posizione di partenza" loading="lazy"><img src="${img(e.id,1)}" alt="${e.name}, posizione finale" loading="lazy"></div>
+    <div class="hold" data-hold="${e.id}"><img src="${img(e.id,0)}" alt="${e.name}: tieni premuto per vedere il movimento" loading="lazy" draggable="false"><span class="hold-hint">Tieni premuto</span></div>
     <div class="spec"><div><small>Serie</small><b>${e.sets}</b></div><div><small>Rep</small><b>${e.reps}</b></div><div><small>Recupero</small><b>${e.rest}</b></div></div>
     ${load}
     ${warmSets(e)}
@@ -716,6 +727,54 @@ function render(focusId){
   view==="plan" ? renderPlan(focusId) : view==="hist" ? renderHist() : renderStats(document.getElementById("stats"));
   const a=anim; anim=null; playAnim(a);
 }
+// Press and hold an exercise photo: after a short still press (so a scroll is not mistaken for it)
+// the photo flies to the centre over a dimmed page, start and end frames alternate while held,
+// and on release it flies back. Frames alternate from JS so they still swap with reduced motion.
+(()=>{
+  const view=document.getElementById("holdview"), bg=view.querySelector(".hv-bg"), box=view.querySelector(".hv-box");
+  const f0=box.querySelector(".f0"), f1=box.querySelector(".f1");
+  let pend=null, active=null;   // pend: {el,x,y,timer} before activation; active: {el,from,iv}
+  const rectOf = el => { const r=el.getBoundingClientRect(); return {left:r.left,top:r.top,width:r.width,height:r.height}; };
+  const px = r => ({left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px"});
+  function target(img){
+    const ratio=(img.naturalWidth&&img.naturalHeight)?img.naturalWidth/img.naturalHeight:1.5;
+    let w=Math.min(innerWidth-32,640), h=w/ratio; const maxH=innerHeight*0.72; if(h>maxH){ h=maxH; w=h*ratio; }
+    return {left:(innerWidth-w)/2, top:(innerHeight-h)/2, width:w, height:h};
+  }
+  function open(el){
+    const img=el.querySelector("img"), from=rectOf(img), to=target(img);
+    f0.src=img.src; f1.src=img.currentSrc.replace(/-0\.jpg$/,"-1.jpg");
+    box.classList.remove("end"); Object.assign(box.style,px(to)); view.hidden=false;
+    if(!RM.matches){
+      box.animate([px(from),px(to)],{duration:280,easing:"cubic-bezier(.2,.7,.2,1)"});
+      bg.animate([{opacity:0},{opacity:1}],{duration:220});
+    }
+    const iv=setInterval(()=>box.classList.toggle("end"),1200);
+    active={el,from,iv};
+  }
+  function close(){
+    if(!active) return;
+    const {from,iv}=active; active=null; clearInterval(iv); box.classList.remove("end");
+    if(RM.matches){ view.hidden=true; return; }
+    const a=box.animate([px(rectOf(box)),px(from)],{duration:240,easing:"cubic-bezier(.2,.7,.2,1)"});
+    bg.animate([{opacity:1},{opacity:0}],{duration:220,fill:"forwards"});
+    a.onfinish=()=>{ if(!active){ view.hidden=true; bg.getAnimations().forEach(x=>x.cancel()); } };
+  }
+  function cancelPend(){ if(pend){ clearTimeout(pend.timer); pend=null; } }
+  document.addEventListener("pointerdown",ev=>{
+    const el=ev.target.closest("[data-hold]"); if(!el || ev.button>0) return;
+    cancelPend(); pend={el,x:ev.clientX,y:ev.clientY,timer:setTimeout(()=>{ const e=pend.el; pend=null; open(e); },150)};
+  });
+  document.addEventListener("pointermove",ev=>{ if(pend && Math.hypot(ev.clientX-pend.x,ev.clientY-pend.y)>10) cancelPend(); });
+  const release=()=>{
+    if(pend){ const h=pend.el.querySelector(".hold-hint"); cancelPend(); h.classList.add("flash"); setTimeout(()=>h.classList.remove("flash"),180); }
+    close();
+  };
+  addEventListener("pointerup",release); addEventListener("pointercancel",release); addEventListener("blur",release);
+  // no long-press menu or selection on the photo
+  document.addEventListener("contextmenu",ev=>{ if(ev.target.closest("[data-hold]")) ev.preventDefault(); });
+})();
+
 // Smooth open/close for every <details> block: animate the block height between
 // "summary only" and "fully open", fading the content. Done in JS because iOS Safari
 // cannot transition to height:auto yet.
