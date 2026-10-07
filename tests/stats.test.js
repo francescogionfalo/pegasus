@@ -1,4 +1,4 @@
-// Test dei calcoli delle statistiche. Esegui: node --test tests/
+// Test dei calcoli delle statistiche. Esegui: node --test
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");

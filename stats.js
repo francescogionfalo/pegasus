@@ -105,7 +105,9 @@ var StatsCalc = (() => {
 
 if(typeof document !== "undefined"){
   const C = StatsCalc;
-  let stMonth = (()=>{ const d=new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+  const firstOfMonth = () => { const d=new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); };
+  let stMonth = firstOfMonth();
+  window.resetStatsMonth = () => { stMonth = firstOfMonth(); };
   let stEx = null;
   const goal = () => S.goal || 5;
   const sign = n => n>0 ? "+"+fmt(n) : fmt(n);
@@ -124,18 +126,17 @@ if(typeof document !== "undefined"){
   }
   function costanza(){
     const W=300, H=120, B=16, T=14, weeks=C.lastWeeks(S.days,goal(),today()), bw=W/weeks.length;
-    const y=n=>T+(1-n/7)*(H-T-B);
+    const y=n=>T+(1-n/7)*(H-T-B), gy=y(goal()), LW=62; // LW: width reserved to the goal label at the left edge
     const bars=weeks.map((w,i)=>{ const x=i*bw+3, top=y(w.n), cls=w.current?"now":w.ok?"ok":"miss";
       return `<rect class="st-bar ${cls}" x="${x}" y="${top}" width="${bw-6}" height="${Math.max(H-B-top,0)}" rx="3"></rect>`
-        +(w.n?`<text class="st-t" x="${x+(bw-6)/2}" y="${top-3}" text-anchor="middle">${w.n}</text>`:"");
+        +(w.n && !(x+(bw-6)/2-5<LW && Math.abs(top-gy)<12)?`<text class="st-t" x="${x+(bw-6)/2}" y="${top-3}" text-anchor="middle">${w.n}</text>`:"");
     }).join("");
-    const gy=y(goal());
     return `<svg class="st-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Giorni allenati nelle ultime 12 settimane, obiettivo ${goal()}">
         <defs><pattern id="st-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" style="fill:var(--green);opacity:.35"></rect><rect width="3" height="6" style="fill:var(--green)"></rect></pattern></defs>
         <line class="st-axis" x1="0" x2="${W}" y1="${H-B}" y2="${H-B}"></line>
         ${bars}
         <line class="st-goal" x1="0" x2="${W}" y1="${gy}" y2="${gy}"></line>
-        <text class="st-t goal" x="${W}" y="${gy-3}" text-anchor="end">obiettivo ${goal()}</text>
+        <text class="st-t goal" x="0" y="${gy-3}" text-anchor="start">obiettivo ${goal()}</text>
         <text class="st-t" x="0" y="${H-3}">${fmtDate(weeks[0].mon)}</text>
         <text class="st-t" x="${W}" y="${H-3}" text-anchor="end">settimana in corso</text>
       </svg>

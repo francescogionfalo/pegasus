@@ -473,7 +473,7 @@ document.getElementById("import").addEventListener("change",async ev=>{
     const o=JSON.parse(await f.text()); const d=o&&o.data;
     if(!d||typeof d.w!=="object"||typeof d.log!=="object") throw new Error("formato");
     // version 1 has no history, version 2 has one fixed activity per day
-    S={w:d.w,log:d.log,days:migrateDays((d.days&&typeof d.days==="object")?d.days:{}),goal:d.goal}; persist(); render(); setSync("cloud","Backup importato");
+    S={w:d.w,log:d.log,days:migrateDays((d.days&&typeof d.days==="object")?d.days:{}),goal:Number.isInteger(d.goal)&&d.goal>=1&&d.goal<=7?d.goal:undefined}; persist(); render(); setSync("cloud","Backup importato");
   }catch(e){ setSync("","File di backup non valido"); }
   ev.target.value="";
 });
@@ -721,7 +721,7 @@ document.addEventListener("click",ev=>{
 
 document.addEventListener("click",ev=>{
   const t=ev.target;
-  const v=t.closest("[data-view]"); if(v){ view=v.dataset.view; anim=view==="hist"?"hist":view==="stats"?"stats":"day"; if(view==="hist"){ hSel=today(); const n=new Date(); hMonth=new Date(n.getFullYear(),n.getMonth(),1); } render(); window.scrollTo({top:0}); return; }
+  const v=t.closest("[data-view]"); if(v){ view=v.dataset.view; anim=view==="hist"?"hist":view==="stats"?"stats":"day"; if(view==="hist"){ hSel=today(); const n=new Date(); hMonth=new Date(n.getFullYear(),n.getMonth(),1); } if(view==="stats"&&window.resetStatsMonth) window.resetStatsMonth(); render(); window.scrollTo({top:0}); return; }
   const sd=t.closest("[data-sel]"); if(sd){ if(sel!==sd.dataset.sel){ sel=sd.dataset.sel; pick=null; anim="day"; } render(); return; }
   const wk=t.closest("[data-wk]"); if(wk){ const n=+wk.dataset.wk;
     // keep the same weekday selected while moving between weeks
