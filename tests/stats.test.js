@@ -81,3 +81,42 @@ test("mix: solo attività realizzate, resistance suddiviso", () => {
   assert.deepEqual(P(C.mix(days, 2026, 8)), { res: 1, muay: 2, cardio: 0, contrast: 1, g2: 1, g4: 0, g7: 0 });
   assert.deepEqual(P(C.mix(days, 2026, 9)), { res: 1, muay: 1, cardio: 1, contrast: 0, g2: 0, g4: 1, g7: 0 });
 });
+
+const X = (kg, done = true) => ({ done, kg, sets: [] });
+const L = {
+  "2026-08-03": { acts: [], ex: { legpress: X(160) } },
+  "2026-09-01": { acts: [], ex: { legpress: X(170) } },
+  "2026-09-15": { acts: [], ex: { legpress: X(170), rdl: { done: false, kg: null, sets: [true] } } },
+  "2026-10-02": { acts: [], ex: { legpress: X(175), chestpress: X(50) } },
+  "2026-10-06": { acts: [], ex: { legpress: X(180), chestpress: X(50) } },
+};
+
+test("sessions: solo giorni con peso, in ordine", () => {
+  assert.deepEqual(P(C.sessions(L, "legpress").map(s => s.kg)), [160, 170, 170, 175, 180]);
+  assert.deepEqual(P(C.sessions(L, "rdl")), []);
+  assert.equal(C.countSessions(L, "rdl"), 1);
+  assert.equal(C.countSessions(L, "legpress"), 5);
+});
+
+test("loadsUp: ultima sessione del mese contro l'ultima prima del mese", () => {
+  const ids = ["legpress", "chestpress", "rdl"];
+  assert.equal(C.loadsUp(L, 2026, 9, ids), 1); // legpress 170 -> 180, chestpress 50 -> 50
+  assert.equal(C.loadsUp(L, 2026, 8, ids), 1); // legpress 160 -> 170
+  assert.equal(C.loadsUp(L, 2026, 7, ids), 0); // una sola sessione, riferimento = se stessa
+});
+
+test("progress: variazione, settimane, fermo", () => {
+  const p = C.progress(C.sessions(L, "legpress"), TODAY);
+  assert.equal(p.first, 160); assert.equal(p.last, 180); assert.equal(p.diff, 20);
+  assert.equal(p.pct, 12.5); assert.equal(p.weeks, 9); assert.equal(p.lastDate, "2026-10-06");
+  assert.equal(p.count, 5); assert.equal(p.stuck, null);
+  const s2 = [{ d: "2026-08-01", kg: 100 }, { d: "2026-09-01", kg: 110 }, { d: "2026-09-08", kg: 110 }];
+  assert.equal(C.progress(s2, "2026-10-07").stuck, 5);
+  assert.equal(C.progress(s2, "2026-09-20").stuck, null);
+  assert.equal(C.progress([], TODAY), null);
+});
+
+test("lastSessionId: esercizio con la sessione più recente", () => {
+  assert.equal(C.lastSessionId(L, ["legpress", "chestpress", "rdl"]), "legpress");
+  assert.equal(C.lastSessionId({}, ["legpress"]), null);
+});

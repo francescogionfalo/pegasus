@@ -65,5 +65,40 @@ var StatsCalc = (() => {
     }
     return c;
   }
-  return { trained, monthTrained, compareMonth, weekCount, monthWeeks, streak, lastWeeks, mix, mondayOf, addDays, daysBetween };
+  // A session of an exercise = a day where it was ticked (Fatto or a set) with a logged weight.
+  function sessions(days, id){
+    return Object.keys(days).sort()
+      .filter(d => { const x = days[d].ex && days[d].ex[id]; return x && x.kg != null; })
+      .map(d => ({ d, kg: days[d].ex[id].kg }));
+  }
+  const countSessions = (days, id) => Object.keys(days).filter(d => days[d].ex && days[d].ex[id]).length;
+  // Exercises whose last session of the month is heavier than the last session before the month
+  // (or than the first session of the month when there is nothing before).
+  function loadsUp(days, y, m, ids){
+    const from = ymd(new Date(y,m,1)), to = ymd(new Date(y,m,daysIn(y,m))); let n = 0;
+    ids.forEach(id => {
+      const s = sessions(days,id), inM = s.filter(x => x.d>=from && x.d<=to); if(!inM.length) return;
+      const before = s.filter(x => x.d<from), ref = before.length ? before[before.length-1].kg : inM[0].kg;
+      if(inM[inM.length-1].kg > ref) n++;
+    });
+    return n;
+  }
+  // "Stuck" = at least 2 sessions at the current weight, the first of them 4+ weeks ago.
+  function progress(s, today){
+    if(!s.length) return null;
+    const first = s[0], last = s[s.length-1];
+    let i = s.length-1; while(i>0 && s[i-1].kg===last.kg) i--;
+    const since = daysBetween(s[i].d, today);
+    return { first: first.kg, last: last.kg, diff: last.kg-first.kg,
+      pct: first.kg ? (last.kg-first.kg)/first.kg*100 : 0,
+      weeks: Math.floor(daysBetween(first.d,last.d)/7), lastDate: last.d, count: s.length,
+      stuck: s.length-i >= 2 && since >= 28 ? Math.floor(since/7) : null };
+  }
+  function lastSessionId(days, ids){
+    let best = null, bestD = "";
+    ids.forEach(id => { const s = sessions(days,id); if(s.length && s[s.length-1].d > bestD){ bestD = s[s.length-1].d; best = id; } });
+    return best;
+  }
+  return { trained, monthTrained, compareMonth, weekCount, monthWeeks, streak, lastWeeks, mix,
+    sessions, countSessions, loadsUp, progress, lastSessionId, mondayOf, addDays, daysBetween };
 })();
