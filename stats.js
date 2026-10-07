@@ -155,7 +155,40 @@ if(typeof document !== "undefined"){
       return `<div class="st-col"><div class="st-track"><div class="st-colbar" style="height:${t/max*100}%">${KINDS.filter(([k])=>o.c[k]).map(([k])=>`<span class="c-${k}" style="flex:${o.c[k]}"></span>`).join("")}</div></div><small>${o.d.toLocaleDateString("it-IT",{month:"short"}).replace(".","")}</small></div>`; }).join("");
     return `${now}<p class="st-note">Ultimi 6 mesi</p><div class="st-cols">${cols}</div>`;
   }
-  function loadBlock(){ return ""; }
+  function lineSvg(s){
+    const W=300, H=150, L=36, R=8, T=12, B=22, t0=+new Date(s[0].d), t1=+new Date(s[s.length-1].d), span=(t1-t0)||1;
+    const kgs=s.map(x=>x.kg), lo0=Math.min(...kgs), hi0=Math.max(...kgs), pad=(hi0-lo0||hi0*0.1||1)*0.15, lo=lo0-pad, hi=hi0+pad;
+    const X=x=>s.length===1 ? (L+W-R)/2 : L+(+new Date(x.d)-t0)/span*(W-L-R);
+    const Y=kg=>T+(hi-kg)/(hi-lo)*(H-T-B);
+    const pts=s.map(x=>`${X(x).toFixed(1)},${Y(x.kg).toFixed(1)}`).join(" ");
+    return `<svg class="st-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Peso per sessione">
+      <line class="st-axis" x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}"></line>
+      <line class="st-grid" x1="${L}" x2="${W-R}" y1="${Y(hi0)}" y2="${Y(hi0)}"></line>
+      ${lo0!==hi0?`<line class="st-grid" x1="${L}" x2="${W-R}" y1="${Y(lo0)}" y2="${Y(lo0)}"></line><text class="st-t" x="${L-6}" y="${Y(lo0)+3}" text-anchor="end">${fmt(lo0)}</text>`:""}
+      <text class="st-t" x="${L-6}" y="${Y(hi0)+3}" text-anchor="end">${fmt(hi0)}</text>
+      ${s.length>1?`<polyline class="st-line" points="${pts}"></polyline>`:""}
+      ${s.map(x=>`<circle class="st-dot" cx="${X(x).toFixed(1)}" cy="${Y(x.kg).toFixed(1)}" r="3.5"><title>${fmtDate(x.d)}: ${fmt(x.kg)} kg</title></circle>`).join("")}
+      <text class="st-t" x="${L}" y="${H-5}">${fmtDate(s[0].d)}</text>
+      ${s.length>1?`<text class="st-t" x="${W-R}" y="${H-5}" text-anchor="end">${fmtDate(s[s.length-1].d)}</text>`:""}
+    </svg>`;
+  }
+  function loadBlock(){
+    const ids=Object.keys(ALL);
+    if(!stEx || !ALL[stEx]) stEx = C.lastSessionId(S.days, ids) || DAYS[0].ex[0].id;
+    const count=e=>e.kg==null ? C.countSessions(S.days,e.id) : C.sessions(S.days,e.id).length;
+    const sel=`<select id="st-ex" class="st-sel" aria-label="Esercizio">${DAYS.map(d=>`<optgroup label="${d.tab}">${d.ex.map(e=>`<option value="${e.id}"${e.id===stEx?" selected":""}>${e.name}${count(e)?"":" (nessuna sessione)"}</option>`).join("")}</optgroup>`).join("")}</select>`;
+    const e=ALL[stEx], unit=/^(per |totale)/.test(e.unit)?" "+e.unit:"";
+    if(e.kg==null){ const n=C.countSessions(S.days,e.id);
+      return sel+`<p class="st-note">${n?`${n} session${n===1?"e":"i"}. Esercizio a corpo libero: nessun peso da mostrare.`:"Nessuna sessione registrata."}</p>`; }
+    const s=C.sessions(S.days,e.id);
+    if(!s.length) return sel+`<p class="st-note">Nessuna sessione registrata.</p>`;
+    const p=C.progress(s,today());
+    const sum = p.count===1
+      ? `Una sola sessione: ${fmt(p.last)} kg${unit}, ${fmtDate(p.lastDate)}. Servono almeno 2 sessioni per vedere l'andamento.`
+      : `${p.diff===0?"Peso invariato":`${sign(p.diff)} kg${unit} (${p.diff>0?"+":""}${Math.round(p.pct)}%)`} ${p.weeks===0?"nella stessa settimana":`in ${p.weeks} settiman${p.weeks===1?"a":"e"}`} · ${p.count} sessioni · ultima ${fmtDate(p.lastDate)}`;
+    return sel+lineSvg(s)+`<p class="st-note">${sum}</p>`
+      +(p.stuck?`<p class="st-warn">Fermo a ${fmt(p.last)} kg da ${p.stuck} settimane: valuta di alzare il peso.</p>`:"");
+  }
 
   window.renderStats = function(el){
     const mName=stMonth.toLocaleDateString("it-IT",{month:"long",year:"numeric"});
