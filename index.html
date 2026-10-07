@@ -287,8 +287,8 @@ p.legend{margin:6px 0 0}
 .reset{display:block;margin:12px auto 0;font-size:13px;color:var(--muted);text-decoration:underline}
 
 /* timer */
-.timer{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);transform:translateY(110%);transition:transform .25s}
-.timer.show{transform:none}
+.timer{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);transform:translateY(110%);visibility:hidden;transition:transform .25s,visibility 0s .25s}
+.timer.show{transform:none;visibility:visible;transition:transform .25s,visibility 0s}
 .timer-in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
 .timer .lbl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .timer .t{font-family:var(--f-display);font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
@@ -303,10 +303,11 @@ p.legend{margin:6px 0 0}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .fade{animation:rise .3s cubic-bezier(.2,.7,.2,1) both}
 /* launch splash: black screen, Pegasus logo and name, once per app launch (sessionStorage), tap to skip */
-#splash{position:fixed;inset:0;z-index:100;background:#000;display:grid;place-items:center;transition:opacity .5s ease;cursor:pointer}
+#splash{position:fixed;inset:-25vh 0;z-index:100;background:#000;display:grid;place-items:center;transition:opacity .5s ease;cursor:pointer}
 #splash.out{opacity:0;pointer-events:none}
 .no-splash #splash{display:none}
-html.booting{background:#000}
+html,body{transition:background-color .5s ease}
+html.booting,html.booting body{background:#000}
 .sp-in{display:flex;flex-direction:column;align-items:center;gap:16px;animation:sp-in .4s cubic-bezier(.2,.7,.2,1) both}
 .sp-in svg{width:128px;height:128px;fill:#F0594C}
 .sp-in b{font-family:var(--f-display);font-weight:800;font-size:30px;letter-spacing:.32em;padding-left:.32em;color:#fff}
@@ -369,8 +370,9 @@ html.booting{background:#000}
   if(document.documentElement.classList.contains("no-splash")){ sp.remove(); return; }
   try{ sessionStorage.setItem("pg-splash","1"); }catch(e){}
   const still=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const done=()=>{ if(!sp.isConnected||sp.classList.contains("out")) return; sp.classList.add("out");
-    setTimeout(()=>{ sp.remove(); document.documentElement.classList.remove("booting"); }, still?0:500); };
+  const done=()=>{ if(!sp.isConnected||sp.classList.contains("out")) return;
+    sp.classList.add("out"); document.documentElement.classList.remove("booting");
+    setTimeout(()=>sp.remove(), still?0:500); };
   const t=setTimeout(done, still?600:1000);
   sp.addEventListener("pointerdown",()=>{ clearTimeout(t); done(); },{once:true});
 })();
