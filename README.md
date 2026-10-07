@@ -36,3 +36,4 @@ Ogni volta che segni un giorno come fatto si apre da solo il salvataggio del bac
 
 - Icone delle attività: [Material Symbols](https://fonts.google.com/icons) di Google, licenza Apache 2.0.
 - Foto degli esercizi: [free-exercise-db](https://github.com/yuhonas/free-exercise-db), dominio pubblico (Unlicense).
+- Icone di Gambe, Torso e Braccia: [Hugeicons](https://hugeicons.com) (versione gratuita), licenza MIT.
