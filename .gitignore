@@ -2,3 +2,7 @@
 node_modules/
 *.log
 .superpowers/
+
+# Materiale personale, solo in locale: foto del libro e dell'allenamento originale, note per Claude
+docs/riferimenti/
+CLAUDE.md

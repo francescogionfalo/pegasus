@@ -15,10 +15,10 @@ Poi apri http://localhost:8000 nel browser.
 ## Pubblicarla su GitHub Pages (gratis)
 
 1. Crea un account su github.com, se non ce l'hai.
-2. Crea un repository nuovo, per esempio `huberman-gym`. Con l'account gratuito, per usare Pages deve essere **pubblico**: si vede il codice, non i tuoi dati, che restano sul telefono.
+2. Crea un repository nuovo, per esempio `pegasus`. Con l'account gratuito, per usare Pages deve essere **pubblico**: si vede il codice, non i tuoi dati, che restano sul telefono.
 3. Carica i file di questa cartella nel repository (Claude Code può farlo per te con git).
 4. Nel repository: **Settings → Pages → Build and deployment → Source: Deploy from a branch**, branch `main`, cartella `/ (root)`, Save.
-5. Dopo un paio di minuti l'app è su `https://<tuo-utente>.github.io/huberman-gym/`.
+5. Dopo un paio di minuti l'app è su `https://<tuo-utente>.github.io/pegasus/`.
 
 Ogni volta che pubblichi una modifica, alza `VERSION` in `sw.js`, così il telefono scarica i file nuovi.
 
