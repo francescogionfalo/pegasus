@@ -78,8 +78,8 @@ test("lastWeeks: ultime settimane, l'ultima è quella in corso", () => {
 });
 
 test("mix: solo attività realizzate, resistance suddiviso", () => {
-  assert.deepEqual(P(C.mix(days, 2026, 8)), { res: 1, muay: 2, cardio: 0, contrast: 1, massage: 0, g2: 1, g4: 0, g7: 0, run: 0, swim: 0 });
-  assert.deepEqual(P(C.mix(days, 2026, 9)), { res: 1, muay: 1, cardio: 1, contrast: 0, massage: 0, g2: 0, g4: 1, g7: 0, run: 1, swim: 0 });
+  assert.deepEqual(P(C.mix(days, 2026, 8)), { res: 1, muay: 2, cardio: 0, contrast: 1, massage: 0, frl: 0, g2: 1, g4: 0, g7: 0, run: 0, swim: 0 });
+  assert.deepEqual(P(C.mix(days, 2026, 9)), { res: 1, muay: 1, cardio: 1, contrast: 0, massage: 0, frl: 0, g2: 0, g4: 1, g7: 0, run: 1, swim: 0 });
 });
 
 const X = (kg, done = true) => ({ done, kg, sets: [] });
@@ -131,5 +131,17 @@ test("corsa e nuoto contano come cardio e come allenamento, il massaggio no", ()
   assert.equal(C.trained(d3["2026-11-02"]), true);
   assert.equal(C.trained(d3["2026-11-04"]), false);
   assert.equal(C.monthTrained(d3, 2026, 10), 2);
-  assert.deepEqual(P(C.mix(d3, 2026, 10)), { res: 0, muay: 0, cardio: 3, contrast: 1, massage: 2, g2: 0, g4: 0, g7: 0, run: 1, swim: 2 });
+  assert.deepEqual(P(C.mix(d3, 2026, 10)), { res: 0, muay: 0, cardio: 3, contrast: 1, massage: 2, frl: 0, g2: 0, g4: 0, g7: 0, run: 1, swim: 2 });
+});
+
+test("freeletics conta come allenamento e ha la sua voce nel mix", () => {
+  const d4 = {
+    "2026-12-01": D([["frl", true]]),
+    "2026-12-02": D([["frl", false]]),
+    "2026-12-03": D([["frl", true], ["g2", true]]),
+  };
+  assert.equal(C.trained(d4["2026-12-01"]), true);
+  assert.equal(C.trained(d4["2026-12-02"]), false);
+  assert.equal(C.monthTrained(d4, 2026, 11), 2);
+  assert.deepEqual(P(C.mix(d4, 2026, 11)), { res: 1, muay: 0, cardio: 0, contrast: 0, massage: 0, frl: 2, g2: 1, g4: 0, g7: 0, run: 0, swim: 0 });
 });

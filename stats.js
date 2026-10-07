@@ -2,7 +2,7 @@
 // StatsCalc: calcoli puri sui dati (nessun DOM), testati in tests/stats.test.js.
 // Sotto, protetta da `typeof document`, la vista che usa le globali di index.html.
 var StatsCalc = (() => {
-  const TRAIN = new Set(["muay", "g2", "g4", "g7", "run", "swim"]);   // contrast, massage, rest are recovery
+  const TRAIN = new Set(["muay", "g2", "g4", "g7", "run", "swim", "frl"]);   // contrast, massage, rest are recovery
   const ymd = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
   const parse = s => { const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); };
   const addDays = (s,n) => { const d=parse(s); d.setDate(d.getDate()+n); return ymd(d); };
@@ -57,13 +57,13 @@ var StatsCalc = (() => {
   }
   function mix(days, y, m){
     // families (res, cardio) plus their parts (g2/g4/g7, run/swim)
-    const c = { res:0, muay:0, cardio:0, contrast:0, massage:0, g2:0, g4:0, g7:0, run:0, swim:0 };
+    const c = { res:0, muay:0, cardio:0, contrast:0, massage:0, frl:0, g2:0, g4:0, g7:0, run:0, swim:0 };
     for(let d=1; d<=daysIn(y,m); d++){
       const r = days[ymd(new Date(y,m,d))]; if(!r || !r.acts) continue;
       r.acts.forEach(a => { if(!a.done) return;
         if(a.k==="g2"||a.k==="g4"||a.k==="g7"){ c.res++; c[a.k]++; }
         else if(a.k==="run"||a.k==="swim"){ c.cardio++; c[a.k]++; }
-        else if(a.k==="muay"||a.k==="contrast"||a.k==="massage") c[a.k]++; });
+        else if(a.k==="muay"||a.k==="frl"||a.k==="contrast"||a.k==="massage") c[a.k]++; });
     }
     return c;
   }
@@ -159,7 +159,7 @@ if(typeof document !== "undefined"){
   }
   const monLong = d => d.toLocaleDateString("it-IT",{month:"long"});
   const cap = t => t.charAt(0).toUpperCase()+t.slice(1);
-  const KINDS=[["res","Resistance"],["muay","Muay Thai"],["cardio","Cardio"],["contrast","Contrasto"],["massage","Massaggio"]];
+  const KINDS=[["res","Resistance"],["muay","Muay Thai"],["cardio","Cardio"],["frl","Freeletics"],["contrast","Contrasto"],["massage","Massaggio"]];
   function mixBlock(){
     const y=stMonth.getFullYear(), m=stMonth.getMonth(), c=C.mix(S.days,y,m), tot=KINDS.reduce((s,[k])=>s+c[k],0);
     const now = tot

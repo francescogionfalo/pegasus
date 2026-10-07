@@ -34,7 +34,7 @@
 /* Layout: a single phone column, sticky week strip + day tabs, one card per exercise, rest timer docked at the bottom. Plate colors code the exercise type. */
 :root{
   --bg:#E9EDF0; --surface:#FFFFFF; --sunk:#F3F5F7; --ink:#11161B; --muted:#5A6570; --line:#D3DAE0;
-  --red:#D2382C; --blue:#1F5ED0; --yellow:#D9A215; --green:#1F8A55; --purple:#7B4FC9; --pink:#C2378F;
+  --red:#D2382C; --blue:#1F5ED0; --yellow:#D9A215; --green:#1F8A55; --purple:#7B4FC9; --pink:#C2378F; --teal:#0E94A6;
   --on-red:#FFFFFF;
   --f-display:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;
   --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -42,10 +42,10 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0E1215; --surface:#171C21; --sunk:#1E242A; --ink:#E7ECEF; --muted:#8E9AA5; --line:#2A333B;
-  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --purple:#A88BEA; --pink:#EE7BC4; --on-red:#140705; color-scheme:dark}}
+  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --purple:#A88BEA; --pink:#EE7BC4; --teal:#45CBDB; --on-red:#140705; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0E1215; --surface:#171C21; --sunk:#1E242A; --ink:#E7ECEF; --muted:#8E9AA5; --line:#2A333B;
-  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --purple:#A88BEA; --pink:#EE7BC4; --on-red:#140705; color-scheme:dark}
+  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --purple:#A88BEA; --pink:#EE7BC4; --teal:#45CBDB; --on-red:#140705; color-scheme:dark}
 
 *{box-sizing:border-box}
 html{color-scheme:light;-webkit-text-size-adjust:100%}
@@ -75,7 +75,7 @@ h1 small{display:block;font-size:13px;font-weight:600;letter-spacing:.14em;color
 .wd.on span,.wd.on small{color:var(--bg)}
 .wd.today b{text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:3px;text-underline-offset:3px}
 /* day colour follows the activity type; several different types in one day = green */
-.k-res{--kc:var(--red)} .k-muay{--kc:var(--blue)} .k-cardio{--kc:var(--yellow)} .k-contrast{--kc:var(--purple)} .k-massage{--kc:var(--pink)} .k-mix{--kc:var(--green)} .k-rest{--kc:var(--muted)}
+.k-res{--kc:var(--red)} .k-muay{--kc:var(--blue)} .k-cardio{--kc:var(--yellow)} .k-contrast{--kc:var(--purple)} .k-massage{--kc:var(--pink)} .k-frl{--kc:var(--teal)} .k-mix{--kc:var(--green)} .k-rest{--kc:var(--muted)}
 .wd.done{background:var(--kc);border-color:var(--kc);color:var(--surface)}
 .wd.done span,.wd.done small{color:var(--surface)}
 .wd.done.k-cardio,.wd.done.k-cardio span,.wd.done.k-cardio small,.cd.done.k-cardio{color:#11161B}
@@ -259,7 +259,7 @@ p.legend{margin:6px 0 0}
 .stp{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-top:12px;font-size:14px}
 .stp-c{display:flex;align-items:center;gap:8px}
 .stp-c b{font-family:var(--f-display);font-size:24px;font-weight:800}
-.c-res{background:var(--red)} .c-muay{background:var(--blue)} .c-cardio{background:var(--yellow)} .c-contrast{background:var(--purple)} .c-massage{background:var(--pink)}
+.c-res{background:var(--red)} .c-muay{background:var(--blue)} .c-cardio{background:var(--yellow)} .c-contrast{background:var(--purple)} .c-massage{background:var(--pink)} .c-frl{background:var(--teal)}
 .st-stack{display:flex;height:18px;border-radius:9px;overflow:hidden;gap:2px;margin-top:4px}
 .st-leg{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:13px;color:var(--muted);margin-top:8px}
 .st-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
@@ -306,7 +306,10 @@ p.legend{margin:6px 0 0}
 #splash{position:fixed;inset:-25vh 0;z-index:100;background:#000;display:grid;place-items:center;transition:opacity .5s ease;cursor:pointer}
 #splash.out{opacity:0;pointer-events:none}
 .no-splash #splash{display:none}
-html,body{transition:background-color .5s ease}
+/* iOS paints the strip past the bottom edge with the page background colour, but updates it late, so a colour
+   change there never tracks the splash fade. This layer covers that strip with the app colour from the start:
+   during the fade the whole screen, strip included, is one opacity change of the splash over the same colour. */
+#underlay{position:fixed;inset:-25vh 0;z-index:-1;background:var(--bg);pointer-events:none}
 html.booting,html.booting body{background:#000}
 .sp-in{display:flex;flex-direction:column;align-items:center;gap:16px;animation:sp-in .4s cubic-bezier(.2,.7,.2,1) both}
 .sp-in svg{width:128px;height:128px;fill:#F0594C}
@@ -319,6 +322,7 @@ html.booting,html.booting body{background:#000}
 </style>
 </head>
 <body>
+<div id="underlay" aria-hidden="true"></div>
 <div id="splash" aria-hidden="true"><div class="sp-in"><svg viewBox="0 0 15 15"><path d="M10.44 0c.07.01.15.11.26.3l.15.3c.03.05.06.1.1.15c.1.15.43.27.66.38c.18.11.2.16.26.33c.09.16.33.39.53.52l.18.12c.16.12.18.18.17.37l-.01.1c-.02.19-.04.3-.1.34c-.15.1-.35-.05-.89-.09c-.54-.03-.59.13-1 0c-.02.04.01.28-.01.61l-.01.14c-.06.62-.03.78.18 1.14l.19.43c.15.35.28.68.27 1.06c1.49-.07 2.43.67 2.98 1.74l.08.07c.19.19.66.73.55 1.39h-1.17c.06-1.26-.53-1.93-1.66-2.05l.24.67c.02.06.04.1.03.1c-.09.47-.35.88-.4 1.23l-.01.16c.02.45-.29.62-.61.81c-.35-.01-.66-.38-.91-.58c1.36-1.44 1.01-2.31.24-2.13l-.06.11l-.08.1c-.24.28-.87.78-2.31.78c-.52 0-1.7.45-1.7.45c-.26 1.11-1.08 1.72-1.92 2.4l-.16.19c-.14.18-.25.34-.26.39c-.01.07.23.67.53 1.35c.33.52.96.58.59 1.52c-.36.03-.63.15-.91.08l-.6-1.39s-.56-1.2-.6-1.39s.15-1.13.15-1.13c.08-.63.32-1.1.22-1.32c-.11-.23-.37-.41-.42-.73c-.03-.3-.07-.37-.2-.36c-1.58.73-.59 1.72-.48 3.63c-.59.05-.84-.15-1.19.26c-.83-.5-.38-.58-.82-.78c-.23-1.43.42-2.98 1.43-3.62c.3-.13.69-.25.88-.28c.3-.04.37-.09.52-.45c.25-.57.96-1.1 1.9-1.2c.3-.05.61-.13.92-.21l-.1-.17L6 5.75c-.01-.02-.04-.05-.12-.07s-.2-.03-.35-.03c-.29.02-.69.1-1.08.2l-1 .26l-.13.03c-.11.03-.21.05-.31.06l-.14.02c-.14.01-.27.03-.43-.07c-.21-.13-.3-.33-.37-.52L2 5.4c-.06-.2-.12-.4-.27-.62l-.1-.12c-.15-.17-.24-.32-.28-.46a.6.6 0 0 1-.03-.29l.01-.07c0 .01 0-.01-.06-.05l-.05-.04c-.18-.13-.35-.33-.53-.57c-.17-.23-.35-.5-.48-.74c-.04-.07-.08-.15-.11-.22l-.04-.11C.02 2-.03 1.91.02 1.74a.4.4 0 0 1 .21-.23c.11-.04.19-.02.25 0c.13.04.24.11.38.22c.38.29 1.33.37 2.42.43c1.08.07 2.29.16 3.29.69c.95.52 1.33 1.07 1.42 1.53c.03.18.02.35 0 .48l-.03.13c0 .03.03.02.23-.13c.25-.19.35-.8-.41-1.56l.18-.45l.08-.18c.13-.25.31-.52.86-1.41c.07-.07.23-.14.4-.21l.65-.21c.24-.08.23-.1.3-.48c.05-.25.11-.37.19-.36"></path></svg><b>PEGASUS</b></div></div>
 
 <div class="wrap">
@@ -448,14 +452,15 @@ const DAYS = [
 
 // Activities a day can hold. g2/g4/g7 are the resistance workouts in DAYS.
 const ACT = {
-  muay:{l:"Muay Thai",s:"Muay",i:"MT"},
+  muay:{l:"Muay Thai",s:"Muay",i:"MT"}, frl:{l:"Freeletics",s:"Freel.",i:"FL"},
   run:{l:"Cardio: Corsa",s:"Corsa",i:"CO",cardio:true}, swim:{l:"Cardio: Nuoto",s:"Nuoto",i:"N",cardio:true},
   contrast:{l:"Terapia di contrasto",s:"Contr.",i:"TC"}, massage:{l:"Massaggio",s:"Massag.",i:"MA"},
   rest:{l:"Riposo",s:"Riposo",i:"R"}};
 DAYS.forEach(d=>ACT[d.id]={l:"Resistance: "+d.tab,s:d.tab,i:d.tab[0],gym:true});
 // Activity icons: Material Symbols Rounded (Google, Apache 2.0), inlined so they work offline.
-// muay: sports_martial_arts, res: exercise, cardio (and run): sprint, swim: pool, contrast: hot_tub, massage: massage, rest: hotel
+// muay: sports_martial_arts, res: exercise, cardio (and run): sprint, swim: pool, contrast: hot_tub, massage: massage, frl (Freeletics): local_fire_department, rest: hotel
 const ICON_PATH = {
+  frl:"M253-173q-93-93-93-227 0-116 71.5-225T428-811q17-11 34.5-.5T480-780v72q0 34 23.5 57t57.5 23q18 0 33.5-7.5T622-658q8-9 18-12.5t19 2.5q66 45 103.5 116T800-400q0 134-93 227T480-80q-134 0-227-93Zm-33-227q0 63 28.5 118.5T328-189q-4-12-6-24.5t-2-24.5q0-32 12-60t35-51l113-111 113 111q23 23 35 51t12 60q0 12-2 24.5t-6 24.5q51-37 79.5-92.5T740-400q0-54-23-105.5T651-600q-21 15-44 23.5t-46 8.5q-61 0-101-41.5T420-714v-20q-92 66-146 156.5T220-400Zm260 24-71 70q-14 14-21.5 31t-7.5 37q0 41 29 69.5t71 28.5q42 0 71-28.5t29-69.5q0-20-7.5-37T551-306l-71-70Z",
   swim:"M480-162q-38 0-66.5 21T343-120q-42 0-71-21t-67-21q-28 0-49 12.5T112-128q-11 5-21.5-2.5T80-152q0-14 9-24.5t22-15.5q21-9 40-20t54-11q46 0 75 21.5t67 21.5q38 0 62.5-21.5T480-223q46 0 75 21.5t67 21.5q38 0 63-21.5t71-21.5q35 0 54 11t39 20q13 5 22 15.5t9 24.5q0 14-10.5 21.5T848-128q-23-9-43-21.5T756-162q-38 0-65 21t-69 21q-42 0-73-21t-69-21Zm0-188q-38 0-64.5 21T347-308q-42 0-73-21t-69-21q-29 0-50.5 13T110-315q-11 5-20.5-3T80-338q0-13 9-22.5t21-14.5q21-8 40.5-19.5T205-406q46 0 73 19t65 19q38 0 64.5-19t72.5-19q46 0 73 19t65 19q38 0 65-19t73-19q35 0 54.5 11.5T851-375q12 5 20.5 14.5T880-338q0 12-9 20t-20 3q-23-9-44.5-22T756-350q-38 0-65 21t-69 21q-42 0-73-21t-69-21ZM288-516l135-135-54-54q-27-27-54-39t-64-16q-17-2-28.5-13.5T211-802q0-17 11.5-28t28.5-9q54 5 93 23t76 55l253 253q-11 9-25.5 13t-29.5 4q-38 0-65.5-21T480-533q-45 0-72 21t-65 21q-18 0-32.5-7T288-516Zm447.5-293.5Q763-782 763-742t-27.5 67.5Q708-647 668-647t-67.5-27.5Q573-702 573-742t27.5-67.5Q628-837 668-837t67.5 27.5Z",
   massage:"m326-477 239 25 25-52-78-42-61-4q-13-1-21-10.5t-7-22.5q1-12 10-20t21-7l75 6 239 126q25 13 52.5 12.5T871-483L642-699H372l-73-104-143 67 87 201q11 26 33.5 41t49.5 17Zm-7 60q-44-5-79-30t-52-65l-86-200q-10-22-1.5-44.5T131-790l142-69q20-10 41-4t34 24l56 80h241q11 0 22 4.5t19 12.5l252 241q9 9 9 21.5t-9 21.5l-6 6q-39 38-91.5 45T740-426l-96-50-25 51q-9 17-25.5 26.5T558-391l-239-26ZM155-127q-12 3-22-3t-14-18q-4-12 2-23.5t19-14.5l174-43q78-20 155.5-35.5T628-280q68 0 130.5 23.5T875-191q9 8 9.5 19.5T877-151q-8 9-20.5 10t-22.5-7q-45-35-96.5-53.5T629-220q-80 0-156.5 16T319-169l-164 42Z",
   muay:"M510-464 491-69q-1 12-10 20.5T458-40q-12 0-20.5-8.5T428-69l-18-357-163-94-19 68 63 111q6 11 3.5 22.5T281-301q-11 6-23 3t-18-14l-71-120q-3-5-4-11t1-12l43-152 237-137-91-91q-9-9-9-21t9-21q9-9 21-9t21 9l119 118q11 11 9 25.5T510-711l-111 63 85 69 299-266q8-7 19-6.5t20 9.5q8 8 8.5 18.5T823-805L510-464ZM193-677q-30 0-51.5-21.5T120-750q0-30 21.5-51.5T193-823q30 0 51.5 21.5T266-750q0 30-21.5 51.5T193-677Z",
@@ -518,7 +523,7 @@ function tidy(date){
   if(!r.acts.length && !Object.keys(r.ex).length) delete S.days[date];
 }
 // Day status drives the colour of the week tile and the calendar cell.
-// Returns "done k-<type>", "part k-<type>" or "rest"; type is res/muay/cardio/contrast/massage, or mix
+// Returns "done k-<type>", "part k-<type>" or "rest"; type is res/muay/cardio/frl/contrast/massage, or mix
 // when the day holds different types (two resistance workouts are still one type).
 function status(r){
   if(!r||!r.acts.length) return "";
@@ -718,6 +723,7 @@ function chooser(r){
   return `<div class="choose"><div class="act-h"><h3>${r&&r.acts.length?"Aggiungi attività":sel===today()?"Cosa fai oggi?":sel>today()?"Cosa vuoi fare?":"Cosa hai fatto?"}</h3>${cancel}</div>
     <div class="opts">${[
       free("muay")?opt("muay","Muay Thai",`data-add="muay"`):"",
+      free("frl")?opt("frl","Freeletics",`data-add="frl"`):"",
       gymLeft?opt("res","Resistance training",`data-pick="res"`):"",
       cardioLeft?opt("cardio","Cardio",`data-pick="cardio"`):"",
       free("contrast")?opt("contrast","Terapia di contrasto",`data-add="contrast"`):"",
@@ -739,7 +745,7 @@ function renderPlan(focusId){
 }
 function renderHist(){
   const y=hMonth.getFullYear(), m=hMonth.getMonth(), days=new Date(y,m+1,0).getDate(), lead=(new Date(y,m,1).getDay()+6)%7;
-  const cnt={res:0,muay:0,cardio:0,contrast:0,massage:0}; let trained=0, cells="";
+  const cnt={res:0,muay:0,cardio:0,frl:0,contrast:0,massage:0}; let trained=0, cells="";
   for(let i=0;i<lead;i++) cells+=`<span></span>`;
   for(let dd=1;dd<=days;dd++){
     const date=ymd(new Date(y,m,dd)), r=S.days[date], st=status(r);
@@ -750,10 +756,10 @@ function renderHist(){
   const mName=hMonth.toLocaleDateString("it-IT",{month:"long",year:"numeric"});
   document.getElementById("hist").innerHTML = `
     <div class="weeknav"><button class="navb" data-hm="-1" aria-label="Mese precedente">‹</button><span>${mName}</span><button class="navb" data-hm="1" aria-label="Mese successivo">›</button></div>
-    <p class="cal-sum"><b>${trained}</b> giorn${trained===1?"o":"i"} di allenamento · ${cnt.res} resistance · ${cnt.muay} Muay Thai · ${cnt.cardio} cardio · ${cnt.contrast} contrasto · ${cnt.massage} massagg${cnt.massage===1?"io":"i"}</p>
+    <p class="cal-sum"><b>${trained}</b> giorn${trained===1?"o":"i"} di allenamento · ${cnt.res} resistance · ${cnt.muay} Muay Thai · ${cnt.cardio} cardio · ${cnt.frl} Freeletics · ${cnt.contrast} contrasto · ${cnt.massage} massagg${cnt.massage===1?"io":"i"}</p>
     <div class="cal">${["L","M","M","G","V","S","D"].map(x=>`<span class="dow">${x}</span>`).join("")}${cells}</div>
-    <div class="legend"><span><i class="sw done k-res"></i>Resistance</span><span><i class="sw done k-muay"></i>Muay Thai</span><span><i class="sw done k-cardio"></i>Cardio</span><span><i class="sw done k-contrast"></i>Contrasto</span><span><i class="sw done k-massage"></i>Massaggio</span><span><i class="sw done k-mix"></i>Più attività</span><span><i class="sw rest"></i>Riposo</span><span><i class="sw part"></i>Da realizzare</span></div>
-    <p class="legend">G Gambe · T Torso · B Braccia · MT Muay Thai · CO Corsa · N Nuoto · TC Contrasto · MA Massaggio · R Riposo</p>
+    <div class="legend"><span><i class="sw done k-res"></i>Resistance</span><span><i class="sw done k-muay"></i>Muay Thai</span><span><i class="sw done k-cardio"></i>Cardio</span><span><i class="sw done k-frl"></i>Freeletics</span><span><i class="sw done k-contrast"></i>Contrasto</span><span><i class="sw done k-massage"></i>Massaggio</span><span><i class="sw done k-mix"></i>Più attività</span><span><i class="sw rest"></i>Riposo</span><span><i class="sw part"></i>Da realizzare</span></div>
+    <p class="legend">G Gambe · T Torso · B Braccia · MT Muay Thai · CO Corsa · N Nuoto · FL Freeletics · TC Contrasto · MA Massaggio · R Riposo</p>
     ${histDay(hSel)}`;
 }
 // Read-only detail of a day: only what was actually ticked is shown.
