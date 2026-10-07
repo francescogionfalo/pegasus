@@ -19,9 +19,9 @@ const days = {
   "2026-09-01": D([["muay", true]]),
   "2026-09-03": D([["g2", true]]),
   "2026-09-05": D([["contrast", true]]),     // non conta come allenamento
-  "2026-09-06": D([["cardio", false]]),      // non realizzato
+  "2026-09-06": D([["run", false]]),         // non realizzato
   "2026-09-10": D([["muay", true]]),
-  "2026-10-02": D([["g4", true], ["cardio", true]]), // un giorno solo
+  "2026-10-02": D([["g4", true], ["run", true]]),    // un giorno solo
   "2026-10-05": D([["muay", true]]),
   "2026-10-06": D([["rest", true]]),
 };
@@ -78,8 +78,8 @@ test("lastWeeks: ultime settimane, l'ultima è quella in corso", () => {
 });
 
 test("mix: solo attività realizzate, resistance suddiviso", () => {
-  assert.deepEqual(P(C.mix(days, 2026, 8)), { res: 1, muay: 2, cardio: 0, contrast: 1, g2: 1, g4: 0, g7: 0 });
-  assert.deepEqual(P(C.mix(days, 2026, 9)), { res: 1, muay: 1, cardio: 1, contrast: 0, g2: 0, g4: 1, g7: 0 });
+  assert.deepEqual(P(C.mix(days, 2026, 8)), { res: 1, muay: 2, cardio: 0, contrast: 1, massage: 0, g2: 1, g4: 0, g7: 0, run: 0, swim: 0 });
+  assert.deepEqual(P(C.mix(days, 2026, 9)), { res: 1, muay: 1, cardio: 1, contrast: 0, massage: 0, g2: 0, g4: 1, g7: 0, run: 1, swim: 0 });
 });
 
 const X = (kg, done = true) => ({ done, kg, sets: [] });
@@ -119,4 +119,17 @@ test("progress: variazione, settimane, fermo", () => {
 test("lastSessionId: esercizio con la sessione più recente", () => {
   assert.equal(C.lastSessionId(L, ["legpress", "chestpress", "rdl"]), "legpress");
   assert.equal(C.lastSessionId({}, ["legpress"]), null);
+});
+
+test("corsa e nuoto contano come cardio e come allenamento, il massaggio no", () => {
+  const d3 = {
+    "2026-11-02": D([["swim", true]]),
+    "2026-11-03": D([["run", true], ["swim", true]]),
+    "2026-11-04": D([["massage", true]]),
+    "2026-11-05": D([["massage", true], ["contrast", true]]),
+  };
+  assert.equal(C.trained(d3["2026-11-02"]), true);
+  assert.equal(C.trained(d3["2026-11-04"]), false);
+  assert.equal(C.monthTrained(d3, 2026, 10), 2);
+  assert.deepEqual(P(C.mix(d3, 2026, 10)), { res: 0, muay: 0, cardio: 3, contrast: 1, massage: 2, g2: 0, g4: 0, g7: 0, run: 1, swim: 2 });
 });

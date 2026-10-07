@@ -34,7 +34,7 @@
 /* Layout: a single phone column, sticky week strip + day tabs, one card per exercise, rest timer docked at the bottom. Plate colors code the exercise type. */
 :root{
   --bg:#E9EDF0; --surface:#FFFFFF; --sunk:#F3F5F7; --ink:#11161B; --muted:#5A6570; --line:#D3DAE0;
-  --red:#D2382C; --blue:#1F5ED0; --yellow:#D9A215; --green:#1F8A55; --purple:#7B4FC9;
+  --red:#D2382C; --blue:#1F5ED0; --yellow:#D9A215; --green:#1F8A55; --purple:#7B4FC9; --pink:#C2378F;
   --on-red:#FFFFFF;
   --f-display:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;
   --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -42,10 +42,10 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0E1215; --surface:#171C21; --sunk:#1E242A; --ink:#E7ECEF; --muted:#8E9AA5; --line:#2A333B;
-  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --purple:#A88BEA; --on-red:#140705; color-scheme:dark}}
+  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --purple:#A88BEA; --pink:#EE7BC4; --on-red:#140705; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0E1215; --surface:#171C21; --sunk:#1E242A; --ink:#E7ECEF; --muted:#8E9AA5; --line:#2A333B;
-  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --purple:#A88BEA; --on-red:#140705; color-scheme:dark}
+  --red:#F0594C; --blue:#6E9BF5; --yellow:#F1C24E; --green:#3FBF80; --purple:#A88BEA; --pink:#EE7BC4; --on-red:#140705; color-scheme:dark}
 
 *{box-sizing:border-box}
 html{color-scheme:light;-webkit-text-size-adjust:100%}
@@ -75,7 +75,7 @@ h1 small{display:block;font-size:13px;font-weight:600;letter-spacing:.14em;color
 .wd.on span,.wd.on small{color:var(--bg)}
 .wd.today b{text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:3px;text-underline-offset:3px}
 /* day colour follows the activity type; several different types in one day = green */
-.k-res{--kc:var(--red)} .k-muay{--kc:var(--blue)} .k-cardio{--kc:var(--yellow)} .k-contrast{--kc:var(--purple)} .k-mix{--kc:var(--green)} .k-rest{--kc:var(--muted)}
+.k-res{--kc:var(--red)} .k-muay{--kc:var(--blue)} .k-cardio{--kc:var(--yellow)} .k-contrast{--kc:var(--purple)} .k-massage{--kc:var(--pink)} .k-mix{--kc:var(--green)} .k-rest{--kc:var(--muted)}
 .wd.done{background:var(--kc);border-color:var(--kc);color:var(--surface)}
 .wd.done span,.wd.done small{color:var(--surface)}
 .wd.done.k-cardio,.wd.done.k-cardio span,.wd.done.k-cardio small,.cd.done.k-cardio{color:#11161B}
@@ -259,7 +259,7 @@ p.legend{margin:6px 0 0}
 .stp{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-top:12px;font-size:14px}
 .stp-c{display:flex;align-items:center;gap:8px}
 .stp-c b{font-family:var(--f-display);font-size:24px;font-weight:800}
-.c-res{background:var(--red)} .c-muay{background:var(--blue)} .c-cardio{background:var(--yellow)} .c-contrast{background:var(--purple)}
+.c-res{background:var(--red)} .c-muay{background:var(--blue)} .c-cardio{background:var(--yellow)} .c-contrast{background:var(--purple)} .c-massage{background:var(--pink)}
 .st-stack{display:flex;height:18px;border-radius:9px;overflow:hidden;gap:2px;margin-top:4px}
 .st-leg{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:13px;color:var(--muted);margin-top:8px}
 .st-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
@@ -448,12 +448,16 @@ const DAYS = [
 
 // Activities a day can hold. g2/g4/g7 are the resistance workouts in DAYS.
 const ACT = {
-  muay:{l:"Muay Thai",s:"Muay",i:"MT"}, cardio:{l:"Cardio",s:"Cardio",i:"C"},
-  contrast:{l:"Terapia di contrasto",s:"Contr.",i:"TC"}, rest:{l:"Riposo",s:"Riposo",i:"R"}};
+  muay:{l:"Muay Thai",s:"Muay",i:"MT"},
+  run:{l:"Cardio: Corsa",s:"Corsa",i:"CO",cardio:true}, swim:{l:"Cardio: Nuoto",s:"Nuoto",i:"N",cardio:true},
+  contrast:{l:"Terapia di contrasto",s:"Contr.",i:"TC"}, massage:{l:"Massaggio",s:"Massag.",i:"MA"},
+  rest:{l:"Riposo",s:"Riposo",i:"R"}};
 DAYS.forEach(d=>ACT[d.id]={l:"Resistance: "+d.tab,s:d.tab,i:d.tab[0],gym:true});
 // Activity icons: Material Symbols Rounded (Google, Apache 2.0), inlined so they work offline.
-// muay: sports_martial_arts, res: exercise, cardio: sprint, contrast: hot_tub, rest: hotel
+// muay: sports_martial_arts, res: exercise, cardio (and run): sprint, swim: pool, contrast: hot_tub, massage: massage, rest: hotel
 const ICON_PATH = {
+  swim:"M480-162q-38 0-66.5 21T343-120q-42 0-71-21t-67-21q-28 0-49 12.5T112-128q-11 5-21.5-2.5T80-152q0-14 9-24.5t22-15.5q21-9 40-20t54-11q46 0 75 21.5t67 21.5q38 0 62.5-21.5T480-223q46 0 75 21.5t67 21.5q38 0 63-21.5t71-21.5q35 0 54 11t39 20q13 5 22 15.5t9 24.5q0 14-10.5 21.5T848-128q-23-9-43-21.5T756-162q-38 0-65 21t-69 21q-42 0-73-21t-69-21Zm0-188q-38 0-64.5 21T347-308q-42 0-73-21t-69-21q-29 0-50.5 13T110-315q-11 5-20.5-3T80-338q0-13 9-22.5t21-14.5q21-8 40.5-19.5T205-406q46 0 73 19t65 19q38 0 64.5-19t72.5-19q46 0 73 19t65 19q38 0 65-19t73-19q35 0 54.5 11.5T851-375q12 5 20.5 14.5T880-338q0 12-9 20t-20 3q-23-9-44.5-22T756-350q-38 0-65 21t-69 21q-42 0-73-21t-69-21ZM288-516l135-135-54-54q-27-27-54-39t-64-16q-17-2-28.5-13.5T211-802q0-17 11.5-28t28.5-9q54 5 93 23t76 55l253 253q-11 9-25.5 13t-29.5 4q-38 0-65.5-21T480-533q-45 0-72 21t-65 21q-18 0-32.5-7T288-516Zm447.5-293.5Q763-782 763-742t-27.5 67.5Q708-647 668-647t-67.5-27.5Q573-702 573-742t27.5-67.5Q628-837 668-837t67.5 27.5Z",
+  massage:"m326-477 239 25 25-52-78-42-61-4q-13-1-21-10.5t-7-22.5q1-12 10-20t21-7l75 6 239 126q25 13 52.5 12.5T871-483L642-699H372l-73-104-143 67 87 201q11 26 33.5 41t49.5 17Zm-7 60q-44-5-79-30t-52-65l-86-200q-10-22-1.5-44.5T131-790l142-69q20-10 41-4t34 24l56 80h241q11 0 22 4.5t19 12.5l252 241q9 9 9 21.5t-9 21.5l-6 6q-39 38-91.5 45T740-426l-96-50-25 51q-9 17-25.5 26.5T558-391l-239-26ZM155-127q-12 3-22-3t-14-18q-4-12 2-23.5t19-14.5l174-43q78-20 155.5-35.5T628-280q68 0 130.5 23.5T875-191q9 8 9.5 19.5T877-151q-8 9-20.5 10t-22.5-7q-45-35-96.5-53.5T629-220q-80 0-156.5 16T319-169l-164 42Z",
   muay:"M510-464 491-69q-1 12-10 20.5T458-40q-12 0-20.5-8.5T428-69l-18-357-163-94-19 68 63 111q6 11 3.5 22.5T281-301q-11 6-23 3t-18-14l-71-120q-3-5-4-11t1-12l43-152 237-137-91-91q-9-9-9-21t9-21q9-9 21-9t21 9l119 118q11 11 9 25.5T510-711l-111 63 85 69 299-266q8-7 19-6.5t20 9.5q8 8 8.5 18.5T823-805L510-464ZM193-677q-30 0-51.5-21.5T120-750q0-30 21.5-51.5T193-823q30 0 51.5 21.5T266-750q0 30-21.5 51.5T193-677Z",
   res:"m826-585-42-42 45-45-157-157-45 45-43-43 30-31q23-23 57-22.5t57 23.5l129 129q23 23 23 56.5T857-615l-31 30ZM346-104q-23 23-56.5 23T233-104L90-247q-17-17.38-17-42.69T90-332l44-44 43 42-45 45 157 157 45-45 42 43-30 30Zm397-308 85-85-331-331-85 85 331 331ZM463-132l86-86-331-331-86 86 331 331Zm9-248 109-109-92-92-109 109 92 92Zm33 290q-16.93 17-41.97 17Q438-73 421-90L90-421q-17-16.93-17-41.97Q73-488 90-505l85-86q17.38-17 42.69-17T260-591l77 77 110-110-77-77q-17-16.93-17-41.97Q353-768 370-785l85-86q17.38-17 42.69-17T540-871l331 331q17 17.38 17 42.69T871-455l-86 85q-16.93 17-41.97 17Q718-353 701-370l-77-77-110 110 77 77q17 17.38 17 42.69T591-175l-86 85Z",
   cardio:"M482-425 237-181q-8.8 9-20.9 9-12.1 0-21.1-9.05-9-9.06-9-21.5 0-12.45 9-21.45l387-386H440v50q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-80q0-12.75 8.63-21.38Q397.25-670 410-670h198q12.09 0 23.04 5Q642-660 650-652l123 121q23 23 52.5 37t61.5 20q12.95 2.25 22.48 11.62Q919-453 917-440q-2 14-12.5 21t-24.5 5q-41-6-77.5-22.5T736-484l-46-46-114 114 58 58q11 11 9 25t-15 22L444-204q-11 6-23.12 2.89-12.12-3.11-18-14Q397-226 400-238t14-18l150-87-82-82Zm-332-15q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h140q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H150ZM70-570q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32Q57.25-630 70-630h140q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H70Zm720-80q-28.52 0-49.26-20.59T720-720.09q0-28.91 20.74-49.41Q761.48-790 790-790t49.26 20.59Q860-748.82 860-719.91t-20.74 49.41Q818.52-650 790-650Zm-640-50q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h140q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H150Z",
@@ -464,17 +468,19 @@ const ICON_LINE = {
   g2:{vb:"0 0 24 24",svg:`<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M5.002 2c2.691.314 8.897 1.896 11.64 5.746c.337.47.69.804 1.27.95c.724.18 1.324.666 1.542 1.4c.232.798.66 1.64.524 2.494c-.052.327-.212.628-.532 1.23L15.099 22"/><path d="M4.002 12c1 1.726 4.164 2.596 8 1.726a10.1 10.1 0 0 0-2.685 2.225c-.559.646-.797 1.544-.836 2.452c-.052 1.212-.232 2.53-.854 3.597M5.002 7s1.959.29 3.5 1.5c1 .786 2.916 1.31 3.5 1.5"/></g>`},
   g4:{vb:"0 0 24 24",svg:`<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15.5 10A1.5 1.5 0 0 1 14 8.5M8.5 10A1.5 1.5 0 0 0 10 8.5M14 2v.643c0 .587 0 .88.065 1.13a2 2 0 0 0 1.16 1.336c.237.1.527.141 1.108.224c1.162.166 1.743.25 2.218.45a4 4 0 0 1 2.318 2.672C21 8.954 21 9.54 21 10.714V22M10 2v.643c0 .587 0 .88-.065 1.13a2 2 0 0 1-1.16 1.336c-.237.1-.527.141-1.108.224c-1.162.166-1.743.25-2.218.45A4 4 0 0 0 3.13 8.454C3 8.954 3 9.54 3 10.714V22m9-9v9"/><path d="M18 11.5s-.545 2.864-.497 5.727C17.535 19.127 18 22 18 22M6 11.5s.545 2.864.497 5.727C6.465 19.127 6 22 6 22"/></g>`},
   g7:{vb:"0 0 24 24",svg:`<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.057 13.5c.982-.637 2.203-1.015 3.526-1.015q.461 0 .903.07c2.058.316 3.014 2.582 3.014 4.733c0 2.152-.977 4.39-3.041 4.656a7 7 0 0 1-.876.056c-1.505 0-2.905-.212-3.944-1.016c-1.687.727-5.692 1.254-9.776-1.44c-1.298-.857-1.662-2.585-1.122-4.075A49.4 49.4 0 0 1 8.124 4.832l.644-.962c.056-.084.085-.126.114-.165a1.97 1.97 0 0 1 .903-.679c.045-.016.092-.031.187-.06l2.01-.624c.802-.249 1.203-.373 1.586-.335c.291.028.573.124.825.28c.33.205.58.551 1.082 1.243l.388.535c.215.297.323.446.387.584a1.56 1.56 0 0 1-.337 1.78c-.11.102-.263.198-.571.389a3 3 0 0 1-.273.16a1.43 1.43 0 0 1-.944.107a3 3 0 0 1-.3-.095l-.727-.25c-.697-.24-1.046-.36-1.373-.233c-.327.128-.5.438-.847 1.057c-.855 1.526-1.782 3.628-2.152 6.306c1.31-.847 4.52-1.829 6.878 1.016"/>`}};
-const kindOf = k => isGym(k)||k==="res" ? "res" : k;
+// colour/statistics family: the three workouts are "res", run and swim are "cardio"
+const kindOf = k => isGym(k)||k==="res" ? "res" : isCardio(k)||k==="cardio" ? "cardio" : k;
 // workouts get their muscle-group icon, everything else the activity icon; colour always follows the activity
 const icon = k => `<span class="ic k-${kindOf(k)}" aria-hidden="true">${ICON_LINE[k]
   ? `<svg class="line" viewBox="${ICON_LINE[k].vb}">${ICON_LINE[k].svg}</svg>`
-  : `<svg viewBox="0 -960 960 960"><path d="${ICON_PATH[kindOf(k)]}"></path></svg>`}</span>`;
+  : `<svg viewBox="0 -960 960 960"><path d="${ICON_PATH[k]||ICON_PATH[kindOf(k)]}"></path></svg>`}</span>`;
 // Huberman plan, Monday first: shown as a suggestion only, the day is whatever gets recorded.
 const SUG = ["muay","g2","muay","g4","muay","contrast","g7"];
 
 const ALL = {}; DAYS.forEach(d=>d.ex.forEach(e=>ALL[e.id]=e));
 const TYPE = {c:["c","Composto"],i:["i","Isolamento"],o:["o","Opzionale"]};
 const isGym = k => !!(ACT[k]&&ACT[k].gym);
+const isCardio = k => !!(ACT[k]&&ACT[k].cardio);
 
 // ---------- dates (local time, "YYYY-MM-DD") ----------
 const ymd = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
@@ -494,6 +500,7 @@ const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return n
 function migrateDays(days){
   for(const date in days){ const r=days[date];
     if(!r.acts){ r.acts = r.a ? [{k:r.a==="sauna"?"contrast":r.a, done:!!r.done}] : []; delete r.a; delete r.done; }
+    r.acts.forEach(a=>{ if(a.k==="cardio") a.k="run"; });   // before run/swim existed, cardio was the run
     r.ex = r.ex||{}; }
   return days;
 }
@@ -511,13 +518,13 @@ function tidy(date){
   if(!r.acts.length && !Object.keys(r.ex).length) delete S.days[date];
 }
 // Day status drives the colour of the week tile and the calendar cell.
-// Returns "done k-<type>", "part k-<type>" or "rest"; type is res/muay/cardio/contrast, or mix
+// Returns "done k-<type>", "part k-<type>" or "rest"; type is res/muay/cardio/contrast/massage, or mix
 // when the day holds different types (two resistance workouts are still one type).
 function status(r){
   if(!r||!r.acts.length) return "";
   const real=r.acts.filter(a=>a.k!=="rest"); if(!real.length) return "rest";
   const done=real.filter(a=>a.done), st=done.length?"done":"part";
-  const types=new Set((done.length?done:real).map(a=>isGym(a.k)?"res":a.k));
+  const types=new Set((done.length?done:real).map(a=>kindOf(a.k)));
   return st+" k-"+(types.size>1?"mix":[...types][0]);
 }
 
@@ -670,7 +677,7 @@ function exCard(e,i,date){
   </details>`;
 }
 const doneBtn = (a,i) => `<button class="daydone${a.done?" on":""}" data-done="${i}" aria-pressed="${a.done}">${a.done?"✓ Realizzato<small>Tocca per annullare</small>":"Segna come realizzato<small>Si apre il salvataggio del backup</small>"}</button>`;
-const actHead = (a,i,kicker) => `<div class="act-h"><div class="act-t">${icon(a.k)}<div><small>${kicker}</small><h3>${isGym(a.k)?ACT[a.k].s:ACT[a.k].l}</h3></div></div><button class="rm" data-rm="${i}">Rimuovi</button></div>`;
+const actHead = (a,i,kicker) => `<div class="act-h"><div class="act-t">${icon(a.k)}<div><small>${kicker}</small><h3>${isGym(a.k)||isCardio(a.k)?ACT[a.k].s:ACT[a.k].l}</h3></div></div><button class="rm" data-rm="${i}">Rimuovi</button></div>`;
 function workout(a,i){
   const d=DAYS.find(x=>x.id===a.k), date=sel;
   const sets=id=>((peek(date,id)||{}).sets||[]).filter(Boolean).length;
@@ -705,13 +712,16 @@ function chooser(r){
   const cancel = r&&r.acts.length ? `<button class="rm" data-pick="">Annulla</button>` : "";
   if(pick==="res") return `<div class="choose"><div class="act-h"><h3>Resistance training</h3><button class="rm" data-pick="main">‹ Indietro</button></div>
     <div class="opts">${DAYS.filter(d=>free(d.id)).map(d=>opt(d.id,d.tab,`data-add="${d.id}"`)).join("")}</div></div>`;
-  const gymLeft=DAYS.some(d=>free(d.id));
+  if(pick==="cardio") return `<div class="choose"><div class="act-h"><h3>Cardio</h3><button class="rm" data-pick="main">‹ Indietro</button></div>
+    <div class="opts">${["run","swim"].filter(free).map(k=>opt(k,ACT[k].s,`data-add="${k}"`)).join("")}</div></div>`;
+  const gymLeft=DAYS.some(d=>free(d.id)), cardioLeft=free("run")||free("swim");
   return `<div class="choose"><div class="act-h"><h3>${r&&r.acts.length?"Aggiungi attività":sel===today()?"Cosa fai oggi?":sel>today()?"Cosa vuoi fare?":"Cosa hai fatto?"}</h3>${cancel}</div>
     <div class="opts">${[
       free("muay")?opt("muay","Muay Thai",`data-add="muay"`):"",
       gymLeft?opt("res","Resistance training",`data-pick="res"`):"",
-      free("cardio")?opt("cardio","Cardio",`data-add="cardio"`):"",
+      cardioLeft?opt("cardio","Cardio",`data-pick="cardio"`):"",
       free("contrast")?opt("contrast","Terapia di contrasto",`data-add="contrast"`):"",
+      free("massage")?opt("massage","Massaggio",`data-add="massage"`):"",
       // rest is the whole day: only offered while the day is still empty
       !(r&&r.acts.length)?opt("rest","Riposo",`data-add="rest"`):""].join("")}</div></div>`;
 }
@@ -729,21 +739,21 @@ function renderPlan(focusId){
 }
 function renderHist(){
   const y=hMonth.getFullYear(), m=hMonth.getMonth(), days=new Date(y,m+1,0).getDate(), lead=(new Date(y,m,1).getDay()+6)%7;
-  const cnt={res:0,muay:0,cardio:0,contrast:0}; let trained=0, cells="";
+  const cnt={res:0,muay:0,cardio:0,contrast:0,massage:0}; let trained=0, cells="";
   for(let i=0;i<lead;i++) cells+=`<span></span>`;
   for(let dd=1;dd<=days;dd++){
     const date=ymd(new Date(y,m,dd)), r=S.days[date], st=status(r);
-    if(r){ let t=false; r.acts.forEach(a=>{ if(!a.done||a.k==="rest") return; cnt[isGym(a.k)?"res":a.k]++; if(a.k!=="contrast") t=true; }); if(t) trained++; }
+    if(r){ let t=false; r.acts.forEach(a=>{ if(!a.done||a.k==="rest") return; const kd=kindOf(a.k); if(kd in cnt) cnt[kd]++; if(kd!=="contrast"&&kd!=="massage") t=true; }); if(t) trained++; }
     const ini = r&&r.acts.length ? `<i>${r.acts.map(a=>ACT[a.k].i).join("·")}</i>` : "";
     cells+=`<button class="cd${st?" "+st:""}${date===today()?" today":""}${date===hSel?" sel":""}" data-hd="${date}" aria-label="${fmtLong(date)}${r&&r.acts.length?": "+r.acts.map(a=>ACT[a.k].l).join(", "):""}">${dd}${ini}</button>`;
   }
   const mName=hMonth.toLocaleDateString("it-IT",{month:"long",year:"numeric"});
   document.getElementById("hist").innerHTML = `
     <div class="weeknav"><button class="navb" data-hm="-1" aria-label="Mese precedente">‹</button><span>${mName}</span><button class="navb" data-hm="1" aria-label="Mese successivo">›</button></div>
-    <p class="cal-sum"><b>${trained}</b> giorn${trained===1?"o":"i"} di allenamento · ${cnt.res} resistance · ${cnt.muay} Muay Thai · ${cnt.cardio} cardio · ${cnt.contrast} contrasto</p>
+    <p class="cal-sum"><b>${trained}</b> giorn${trained===1?"o":"i"} di allenamento · ${cnt.res} resistance · ${cnt.muay} Muay Thai · ${cnt.cardio} cardio · ${cnt.contrast} contrasto · ${cnt.massage} massagg${cnt.massage===1?"io":"i"}</p>
     <div class="cal">${["L","M","M","G","V","S","D"].map(x=>`<span class="dow">${x}</span>`).join("")}${cells}</div>
-    <div class="legend"><span><i class="sw done k-res"></i>Resistance</span><span><i class="sw done k-muay"></i>Muay Thai</span><span><i class="sw done k-cardio"></i>Cardio</span><span><i class="sw done k-contrast"></i>Contrasto</span><span><i class="sw done k-mix"></i>Più attività</span><span><i class="sw rest"></i>Riposo</span><span><i class="sw part"></i>Da realizzare</span></div>
-    <p class="legend">G Gambe · T Torso · B Braccia · MT Muay Thai · C Cardio · TC Contrasto · R Riposo</p>
+    <div class="legend"><span><i class="sw done k-res"></i>Resistance</span><span><i class="sw done k-muay"></i>Muay Thai</span><span><i class="sw done k-cardio"></i>Cardio</span><span><i class="sw done k-contrast"></i>Contrasto</span><span><i class="sw done k-massage"></i>Massaggio</span><span><i class="sw done k-mix"></i>Più attività</span><span><i class="sw rest"></i>Riposo</span><span><i class="sw part"></i>Da realizzare</span></div>
+    <p class="legend">G Gambe · T Torso · B Braccia · MT Muay Thai · CO Corsa · N Nuoto · TC Contrasto · MA Massaggio · R Riposo</p>
     ${histDay(hSel)}`;
 }
 // Read-only detail of a day: only what was actually ticked is shown.

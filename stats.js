@@ -2,7 +2,7 @@
 // StatsCalc: calcoli puri sui dati (nessun DOM), testati in tests/stats.test.js.
 // Sotto, protetta da `typeof document`, la vista che usa le globali di index.html.
 var StatsCalc = (() => {
-  const TRAIN = new Set(["muay", "g2", "g4", "g7", "cardio"]);
+  const TRAIN = new Set(["muay", "g2", "g4", "g7", "run", "swim"]);   // contrast, massage, rest are recovery
   const ymd = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
   const parse = s => { const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); };
   const addDays = (s,n) => { const d=parse(s); d.setDate(d.getDate()+n); return ymd(d); };
@@ -56,12 +56,14 @@ var StatsCalc = (() => {
     return out;
   }
   function mix(days, y, m){
-    const c = { res:0, muay:0, cardio:0, contrast:0, g2:0, g4:0, g7:0 };
+    // families (res, cardio) plus their parts (g2/g4/g7, run/swim)
+    const c = { res:0, muay:0, cardio:0, contrast:0, massage:0, g2:0, g4:0, g7:0, run:0, swim:0 };
     for(let d=1; d<=daysIn(y,m); d++){
       const r = days[ymd(new Date(y,m,d))]; if(!r || !r.acts) continue;
       r.acts.forEach(a => { if(!a.done) return;
         if(a.k==="g2"||a.k==="g4"||a.k==="g7"){ c.res++; c[a.k]++; }
-        else if(a.k in c) c[a.k]++; });
+        else if(a.k==="run"||a.k==="swim"){ c.cardio++; c[a.k]++; }
+        else if(a.k==="muay"||a.k==="contrast"||a.k==="massage") c[a.k]++; });
     }
     return c;
   }
@@ -157,13 +159,13 @@ if(typeof document !== "undefined"){
   }
   const monLong = d => d.toLocaleDateString("it-IT",{month:"long"});
   const cap = t => t.charAt(0).toUpperCase()+t.slice(1);
-  const KINDS=[["res","Resistance"],["muay","Muay Thai"],["cardio","Cardio"],["contrast","Contrasto"]];
+  const KINDS=[["res","Resistance"],["muay","Muay Thai"],["cardio","Cardio"],["contrast","Contrasto"],["massage","Massaggio"]];
   function mixBlock(){
     const y=stMonth.getFullYear(), m=stMonth.getMonth(), c=C.mix(S.days,y,m), tot=KINDS.reduce((s,[k])=>s+c[k],0);
     const now = tot
       ? `<div class="st-stack">${KINDS.filter(([k])=>c[k]).map(([k,l])=>`<span class="c-${k}" style="flex:${c[k]}" data-tip="${cap(monLong(stMonth))} · ${l} ${c[k]}"></span>`).join("")}</div>
          <div class="st-leg">${KINDS.map(([k,l])=>`<span><i class="c-${k}"></i>${l} ${c[k]}</span>`).join("")}</div>
-         <p class="st-note">Resistance: Gambe ${c.g2} · Torso ${c.g4} · Braccia ${c.g7}</p>`
+         <p class="st-note">Resistance: Gambe ${c.g2} · Torso ${c.g4} · Braccia ${c.g7}<br>Cardio: Corsa ${c.run} · Nuoto ${c.swim}</p>`
       : `<p class="st-note">Nessuna attività in questo mese.</p>`;
     const months=[5,4,3,2,1,0].map(i=>{ const d=new Date(y,m-i,1); return { d, c:C.mix(S.days,d.getFullYear(),d.getMonth()) }; });
     const max=Math.max(1,...months.map(o=>KINDS.reduce((s,[k])=>s+o.c[k],0)));
