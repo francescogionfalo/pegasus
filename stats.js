@@ -102,3 +102,47 @@ var StatsCalc = (() => {
   return { trained, monthTrained, compareMonth, weekCount, monthWeeks, streak, lastWeeks, mix,
     sessions, countSessions, loadsUp, progress, lastSessionId, mondayOf, addDays, daysBetween };
 })();
+
+if(typeof document !== "undefined"){
+  const C = StatsCalc;
+  let stMonth = (()=>{ const d=new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+  let stEx = null;
+  const goal = () => S.goal || 5;
+  const sign = n => n>0 ? "+"+fmt(n) : fmt(n);
+
+  function kpis(){
+    const y=stMonth.getFullYear(), m=stMonth.getMonth(), t=today();
+    const cm=C.compareMonth(S.days,y,m,t), mw=C.monthWeeks(S.days,y,m,goal(),t), st=C.streak(S.days,goal(),t);
+    const up=C.loadsUp(S.days,y,m,Object.keys(ALL).filter(id=>ALL[id].kg!=null));
+    const prevName=new Date(y,m-1,1).toLocaleDateString("it-IT",{month:"long"});
+    return `<div class="kpis">
+      <div class="kpi"><b class="num">${cm.cur}</b><small>Giorni allenati</small><em class="${cm.diff>0?"up":cm.diff<0?"down":""}">${sign(cm.diff)} vs ${prevName}${cm.sameDate?" alla stessa data":""}</em></div>
+      <div class="kpi"><b class="num">${mw.ok}<span> su ${mw.total}</span></b><small>Settimane riuscite</small>${mw.current!=null?`<em>in corso: ${mw.current}/${goal()}</em>`:""}</div>
+      <div class="kpi"><b class="num">${st.cur}</b><small>Settimane di fila</small><em>record: ${st.best}</em></div>
+      <div class="kpi"><b class="num">${up}</b><small>Carichi aumentati</small></div>
+    </div>`;
+  }
+  function costanza(){ return ""; }
+  function mixBlock(){ return ""; }
+  function loadBlock(){ return ""; }
+
+  window.renderStats = function(el){
+    const mName=stMonth.toLocaleDateString("it-IT",{month:"long",year:"numeric"});
+    const monShort=stMonth.toLocaleDateString("it-IT",{month:"long"});
+    const panel=(k,title,sub,body)=>`<details class="panel" data-k="${k}"${OPEN.has(k)?" open":""}><summary><h3>${title}</h3><span>${sub}</span></summary><div class="panel-body">${body}</div></details>`;
+    el.innerHTML = `
+      <div class="weeknav"><button class="navb" data-sm="-1" aria-label="Mese precedente">‹</button><span>${mName}</span><button class="navb" data-sm="1" aria-label="Mese successivo">›</button></div>
+      ${kpis()}
+      <div class="stack">
+        ${panel("st-cost","Costanza","ultime 12 settimane",costanza())}
+        ${panel("st-mix","Mix attività",monShort,mixBlock())}
+        ${panel("st-load","Progressione carichi",Object.keys(ALL).length+" esercizi",loadBlock())}
+      </div>`;
+  };
+
+  document.addEventListener("click", ev=>{
+    const sm=ev.target.closest("[data-sm]"); if(sm){ stMonth=new Date(stMonth.getFullYear(), stMonth.getMonth()+ +sm.dataset.sm, 1); render(); return; }
+    const g=ev.target.closest("[data-goal]"); if(g){ S.goal=Math.min(7,Math.max(1,goal()+ +g.dataset.goal)); persist(); render(); }
+  });
+  document.addEventListener("change", ev=>{ if(ev.target.id==="st-ex"){ stEx=ev.target.value; render(); } });
+}
