@@ -14,6 +14,7 @@
 <link rel="icon" href="icons/icon-192.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>try{if(sessionStorage.getItem("pg-splash"))document.documentElement.classList.add("no-splash")}catch(e){}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap">
 <style>
 /* Layout: a single phone column, sticky week strip + day tabs, one card per exercise, rest timer docked at the bottom. Plate colors code the exercise type. */
@@ -287,6 +288,14 @@ p.legend{margin:6px 0 0}
 /* entrance: blocks fade in and rise slightly; staggered via inline animation-delay */
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .fade{animation:rise .3s cubic-bezier(.2,.7,.2,1) both}
+/* launch splash: black screen, Pegasus logo and name, once per app launch (sessionStorage), tap to skip */
+#splash{position:fixed;inset:0;z-index:100;background:#000;display:grid;place-items:center;transition:opacity .5s ease;cursor:pointer}
+#splash.out{opacity:0;pointer-events:none}
+.no-splash #splash{display:none}
+.sp-in{display:flex;flex-direction:column;align-items:center;gap:16px;animation:sp-in .4s cubic-bezier(.2,.7,.2,1) both}
+.sp-in svg{width:128px;height:128px;fill:#F0594C}
+.sp-in b{font-family:var(--f-display);font-weight:800;font-size:30px;letter-spacing:.32em;padding-left:.32em;color:#fff}
+@keyframes sp-in{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .backup{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:22px}
 .backup button,.backup label{font-size:13px;border:1.5px solid var(--line);border-radius:999px;padding:7px 14px;color:var(--muted);cursor:pointer;background:var(--surface)}
@@ -294,6 +303,7 @@ p.legend{margin:6px 0 0}
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true"><div class="sp-in"><svg viewBox="0 0 15 15"><path d="M10.44 0c.07.01.15.11.26.3l.15.3c.03.05.06.1.1.15c.1.15.43.27.66.38c.18.11.2.16.26.33c.09.16.33.39.53.52l.18.12c.16.12.18.18.17.37l-.01.1c-.02.19-.04.3-.1.34c-.15.1-.35-.05-.89-.09c-.54-.03-.59.13-1 0c-.02.04.01.28-.01.61l-.01.14c-.06.62-.03.78.18 1.14l.19.43c.15.35.28.68.27 1.06c1.49-.07 2.43.67 2.98 1.74l.08.07c.19.19.66.73.55 1.39h-1.17c.06-1.26-.53-1.93-1.66-2.05l.24.67c.02.06.04.1.03.1c-.09.47-.35.88-.4 1.23l-.01.16c.02.45-.29.62-.61.81c-.35-.01-.66-.38-.91-.58c1.36-1.44 1.01-2.31.24-2.13l-.06.11l-.08.1c-.24.28-.87.78-2.31.78c-.52 0-1.7.45-1.7.45c-.26 1.11-1.08 1.72-1.92 2.4l-.16.19c-.14.18-.25.34-.26.39c-.01.07.23.67.53 1.35c.33.52.96.58.59 1.52c-.36.03-.63.15-.91.08l-.6-1.39s-.56-1.2-.6-1.39s.15-1.13.15-1.13c.08-.63.32-1.1.22-1.32c-.11-.23-.37-.41-.42-.73c-.03-.3-.07-.37-.2-.36c-1.58.73-.59 1.72-.48 3.63c-.59.05-.84-.15-1.19.26c-.83-.5-.38-.58-.82-.78c-.23-1.43.42-2.98 1.43-3.62c.3-.13.69-.25.88-.28c.3-.04.37-.09.52-.45c.25-.57.96-1.1 1.9-1.2c.3-.05.61-.13.92-.21l-.1-.17L6 5.75c-.01-.02-.04-.05-.12-.07s-.2-.03-.35-.03c-.29.02-.69.1-1.08.2l-1 .26l-.13.03c-.11.03-.21.05-.31.06l-.14.02c-.14.01-.27.03-.43-.07c-.21-.13-.3-.33-.37-.52L2 5.4c-.06-.2-.12-.4-.27-.62l-.1-.12c-.15-.17-.24-.32-.28-.46a.6.6 0 0 1-.03-.29l.01-.07c0 .01 0-.01-.06-.05l-.05-.04c-.18-.13-.35-.33-.53-.57c-.17-.23-.35-.5-.48-.74c-.04-.07-.08-.15-.11-.22l-.04-.11C.02 2-.03 1.91.02 1.74a.4.4 0 0 1 .21-.23c.11-.04.19-.02.25 0c.13.04.24.11.38.22c.38.29 1.33.37 2.42.43c1.08.07 2.29.16 3.29.69c.95.52 1.33 1.07 1.42 1.53c.03.18.02.35 0 .48l-.03.13c0 .03.03.02.23-.13c.25-.19.35-.8-.41-1.56l.18-.45l.08-.18c.13-.25.31-.52.86-1.41c.07-.07.23-.14.4-.21l.65-.21c.24-.08.23-.1.3-.48c.05-.25.11-.37.19-.36"></path></svg><b>PEGASUS</b></div></div>
 
 <div class="wrap">
   <header>
@@ -338,6 +348,16 @@ p.legend{margin:6px 0 0}
 </div>
 
 <script>
+// Splash timing: 0.4s logo in (CSS), held until 1.0s, then 0.5s fade out = 1.5s. Reduced motion: static, gone at 0.6s.
+(()=>{
+  const sp=document.getElementById("splash"); if(!sp) return;
+  if(document.documentElement.classList.contains("no-splash")){ sp.remove(); return; }
+  try{ sessionStorage.setItem("pg-splash","1"); }catch(e){}
+  const still=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const done=()=>{ if(!sp.isConnected||sp.classList.contains("out")) return; sp.classList.add("out"); setTimeout(()=>sp.remove(), still?0:500); };
+  const t=setTimeout(done, still?600:1000);
+  sp.addEventListener("pointerdown",()=>{ clearTimeout(t); done(); },{once:true});
+})();
 const YT = id => "https://www.youtube.com/watch?v=" + id;
 const YTS = q => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
 
