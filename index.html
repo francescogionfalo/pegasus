@@ -222,6 +222,13 @@ p.legend{margin:6px 0 0}
 .act{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
 .act.done{border-color:var(--green);background:color-mix(in srgb,var(--green) 12%,var(--surface))}
 .act .daydone{margin-top:12px}
+/* Freeletics duration: up to 3 digits; 16px+ text so iOS does not zoom on focus */
+.metrics{display:flex;flex-wrap:wrap;gap:10px 22px}
+.mins{display:flex;align-items:center;gap:10px}
+.mins input{width:96px;height:56px;border:1.5px solid var(--line);border-radius:12px;background:var(--sunk);color:var(--ink);font-family:var(--f-display);font-size:30px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.mins input:focus{outline:2px solid var(--blue);outline-offset:1px}
+.mins input:focus::placeholder{color:transparent}   /* the "0" hint hides while typing, comes back if left empty */
+.mins span{font-family:var(--f-display);font-size:20px;font-weight:600;color:var(--muted)}
 .act-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
 .act .act-h:only-child{margin-bottom:0}
 .act-h small{display:block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
@@ -549,6 +556,7 @@ const img = (id,k) => `img/ex/${id}-${k}.jpg`;
 const OPEN = new Set();
 document.addEventListener("toggle",ev=>{ const k=ev.target.dataset&&ev.target.dataset.k; if(k) ev.target.open?OPEN.add(k):OPEN.delete(k); },true);
 const fmt = n => (Math.round(n*10)/10).toString().replace(".",",");
+const fmtKm = n => (Math.round(n*100)/100).toString().replace(".",",");
 
 // ---------- persistence (localStorage on the device) ----------
 const syncEl=document.getElementById("sync");
@@ -681,7 +689,13 @@ function exCard(e,i,date){
     </div>
   </details>`;
 }
-const doneBtn = (a,i) => `<button class="daydone${a.done?" on":""}" data-done="${i}" aria-pressed="${a.done}">${a.done?"✓ Realizzato<small>Tocca per annullare</small>":"Segna come realizzato<small>Si apre il salvataggio del backup</small>"}</button>`;
+const doneBtn = (a,i) => `<button class="daydone${a.done?" on":""}" data-done="${i}" aria-pressed="${a.done}">${a.done?"✓ Fatto<small>Tocca per annullare</small>":"Fatto"}</button>`;
+// Freeletics only: how long the session lasted, saved as acts[i].min (optional, minutes)
+// Freeletics, run and swim: how long the session lasted (acts[i].min, minutes); run and swim also the distance (acts[i].km).
+// Both optional. Minutes up to 3 digits, km up to 3 digits plus 2 decimals ("5,2").
+const minsField = (a,i) => a.k!=="frl"&&!isCardio(a.k) ? "" : `<div class="metrics">
+  <label class="mins"><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" placeholder="0" data-min="${i}" value="${a.min!=null?a.min:""}" aria-label="Durata in minuti"><span>minuti</span></label>
+  ${isCardio(a.k)?`<label class="mins"><input type="text" inputmode="decimal" maxlength="6" placeholder="0" data-km="${i}" value="${a.km!=null?fmtKm(a.km):""}" aria-label="Distanza in chilometri"><span>km</span></label>`:""}</div>`;
 const actHead = (a,i,kicker) => `<div class="act-h"><div class="act-t">${icon(a.k)}<div><small>${kicker}</small><h3>${isGym(a.k)||isCardio(a.k)?ACT[a.k].s:ACT[a.k].l}</h3></div></div><button class="rm" data-rm="${i}">Rimuovi</button></div>`;
 function workout(a,i){
   const d=DAYS.find(x=>x.id===a.k), date=sel;
@@ -736,7 +750,7 @@ function renderPlan(focusId){
   const r=S.days[sel], acts=r?r.acts:[];
   const blocks = acts.map((a,i)=> isGym(a.k) ? workout(a,i)
     : a.k==="rest" ? `<section class="act rest">${actHead(a,i,"Giorno di recupero")}</section>`
-    : `<section class="act${a.done?" done":""}">${actHead(a,i,a.done?"Realizzato":"Da realizzare")}${doneBtn(a,i)}</section>`).join("");
+    : `<section class="act${a.done?" done":""}">${actHead(a,i,a.done?"Realizzato":"Da realizzare")}${minsField(a,i)}${doneBtn(a,i)}</section>`).join("");
   document.getElementById("day").innerHTML = `
     <div class="dayhead"><h2><span class="date">${sel===today()?"Oggi":"Giorno"}</span>${fmtLong(sel)}</h2></div>
     <div class="acts">${blocks}
@@ -778,6 +792,8 @@ function histDay(date){
             const info=[x.kg!=null?fmt(x.kg)+" kg"+unit:(e.kg==null?"corpo libero":""), n?`${n} di ${e.sets} serie`:""].filter(Boolean).join(" · ");
             return `<li class="${x.done?"":"no"}"><div><b>${x.done?"✓ ":""}${e.name}</b>${info?`<small>${info}</small>`:""}</div></li>`; }).join("")}</ul>`;
     }
+    const meas=[a.min?`Durata: ${a.min} minut${a.min===1?"o":"i"}`:"", a.km?`Distanza: ${fmtKm(a.km)} km`:""].filter(Boolean).join(" · ");
+    if(meas) body=`<p class="num">${meas}</p>`;
     return `<div class="hact"><div class="hact-h"><h4>${icon(a.k)}${ACT[a.k].l}</h4>${st}</div>${body}</div>`;
   }).join("");
   return `<div class="hday"><h3>${fmtLong(date)}</h3>${acts}</div>`;
@@ -896,6 +912,22 @@ document.addEventListener("click",ev=>{
   const w=t.closest("[data-w]"); if(w){ unlock(); changeW(w.dataset.w,+w.dataset.d); return; }
   const s=t.closest("[data-s]"); if(s){ unlock(); toggleSet(s.dataset.s,+s.dataset.i); return; }
   const rs=t.closest("[data-reset]"); if(rs){ const r=S.days[sel]; if(r){ DAYS.find(d=>d.id===rs.dataset.reset).ex.forEach(e=>delete r.ex[e.id]); tidy(sel); persist(); } stopTimer(); render(); }
+});
+
+// Typing the minutes saves on every keystroke without re-rendering, so the field keeps focus.
+document.addEventListener("input",ev=>{
+  const f=ev.target.closest("[data-min],[data-km]"); if(!f) return;
+  const a=S.days[sel]&&S.days[sel].acts[+(f.dataset.min||f.dataset.km)]; if(!a) return;
+  if(f.dataset.min!=null){
+    const v=f.value.replace(/\D/g,"").slice(0,3); if(f.value!==v) f.value=v;
+    if(+v>0) a.min=+v; else delete a.min;
+  } else {
+    // keep digits and one decimal separator (comma or dot), at most 3 integer and 2 decimal digits
+    const [int,...dec]=f.value.replace(/\./g,",").replace(/[^\d,]/g,"").split(","), v=int.slice(0,3)+(dec.length?","+dec.join("").slice(0,2):"");
+    if(f.value!==v) f.value=v;
+    const n=parseFloat(v.replace(",",".")); if(n>0) a.km=n; else delete a.km;
+  }
+  persist();
 });
 
 // ---------- rest timer ----------
