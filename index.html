@@ -393,23 +393,30 @@ const YTS = q => "https://www.youtube.com/results?search_query=" + encodeURIComp
 // type: c = composto, i = isolamento, o = opzionale isolamento
 const DAYS = [
  { id:"g2", n:2, tab:"Gambe", sub:"Quadricipiti, femorali, polpacci", title:"Gambe",
-   after:"Domani c'è Muay Thai. Se arrivi con le gambe distrutte, togli l'hack squat o resta a 2 serie sulla leg press.",
+   after:"Domani c'è Muay Thai. Se arrivi con le gambe distrutte, togli l'hip thrust o resta a 2 serie sulla leg press.",
    warm:{gen:"Cyclette o camminata in salita a ritmo facile, 5 minuti", moves:["10 squat a corpo libero","10 ponti glutei","10 oscillazioni gamba avanti e indietro, per lato"]},
    ex:[
     {id:"legpress",name:"Leg press",t:"c",sets:3,reps:"6-10",rest:"3-5'",rs:180,kg:170,step:5,unit:"",ws:true,
      note:"Piedi a metà pedana, larghezza spalle. Scendi finché il bacino resta incollato allo schienale. In alto non bloccare le ginocchia.",v:YT("K5n2vg3oZa4")},
-    {id:"rdl",name:"Romanian deadlift",t:"c",sets:2,reps:"6-10",rest:"3-5'",rs:180,kg:50,step:2.5,unit:"totale",ws:true,
-     note:"Ginocchia appena piegate e ferme. Spingi il bacino indietro con la schiena neutra, bilanciere vicino alle gambe. Scendi finché senti tirare i femorali, non oltre.",v:YT("lKLYvNGz6mk")},
-    {id:"hack",name:"Hack squat o squat al multipower",t:"c",sets:2,reps:"6-10",rest:"3'",rs:180,kg:60,step:5,unit:"dischi, stima",ws:false,
-     note:"Schiena aderente allo schienale, scendi almeno a coscia parallela. Spingi da tutto il piede, talloni giù.",v:YT("-lAnEGH2blE")},
+    {id:"hipthrust",name:"Hip thrust con bilanciere",t:"c",sets:2,reps:"6-10",rest:"3'",rs:180,kg:60,step:5,unit:"totale, stima",ws:false,
+     note:"Parte alta della schiena sul bordo della panca, bilanciere sulle anche con un cuscinetto. Piedi a larghezza spalle, tibie verticali in alto. Spingi con i talloni fino ad allineare busto e cosce, stringi i glutei un secondo, mento verso il petto, senza inarcare la zona lombare.",v:YTS("barbell hip thrust proper form")},
     {id:"legext",name:"Leg extension",t:"i",sets:2,reps:"10-15",rest:"90\"-2'",rs:90,kg:50,step:5,unit:"",ws:false,
      note:"Ginocchio allineato al perno della macchina. Un secondo di pausa in alto, scendi lento.",v:YT("MXvSzXEBOTI")},
     {id:"legcurl",name:"Prone leg curl",t:"i",sets:2,reps:"10-15",rest:"90\"-2'",rs:90,kg:50,step:5,unit:"",ws:false,
      note:"Bacino schiacciato sulla panca, non alzarlo per aiutarti. Ritorno controllato in 2-3 secondi.",v:YT("SbSNUXPRkc8")},
+    {id:"adductor",name:"Adductor machine",t:"i",sets:2,reps:"10-15",rest:"90\"-2'",rs:90,kg:90,step:5,unit:"",ws:false,
+     note:"Schiena appoggiata, cuscinetti all'interno delle ginocchia. Chiudi le gambe fino a far toccare i cuscinetti, pausa di un secondo, poi riapri lento in 2-3 secondi senza far sbattere i pesi.",v:YTS("hip adductor machine proper form")},
     {id:"calf",name:"Calf raise in piedi",t:"i",sets:2,reps:"10-15",rest:"90\"",rs:90,kg:60,step:5,unit:"stima",ws:true,
      note:"Discesa completa con il tallone sotto la pedana, pausa di un secondo in allungamento, poi su fino in punta.",v:YT("ndQc4mz4mBU")},
     {id:"kickback",name:"Kickback ai cavi",t:"o",sets:2,reps:"10-15",rest:"90\"",rs:90,kg:10,step:2.5,unit:"per gamba",ws:false,
      note:"Busto fermo e leggermente inclinato. Spingi indietro con il gluteo, senza inarcare la zona lombare.",v:YT("VSgMyiOu0uE")},
+   ],
+   // Removed from the plan, kept so past sessions still show in Storico and Statistiche.
+   old:[
+     {id:"rdl",name:"Romanian deadlift",t:"c",sets:2,reps:"6-10",rest:"3-5'",rs:180,kg:50,step:2.5,unit:"totale",ws:true,
+     note:"Ginocchia appena piegate e ferme. Spingi il bacino indietro con la schiena neutra, bilanciere vicino alle gambe. Scendi finché senti tirare i femorali, non oltre.",v:YT("lKLYvNGz6mk")},
+     {id:"hack",name:"Hack squat o squat al multipower",t:"c",sets:2,reps:"6-10",rest:"3'",rs:180,kg:60,step:5,unit:"dischi, stima",ws:false,
+     note:"Schiena aderente allo schienale, scendi almeno a coscia parallela. Spingi da tutto il piede, talloni giù.",v:YT("-lAnEGH2blE")},
    ]},
  { id:"g4", n:4, tab:"Torso", sub:"Petto, schiena, addominali", title:"Petto · Schiena · Addome",
    after:"Tra petto e schiena non serve un nuovo riscaldamento generale: bastano le serie leggere sul lat pulldown.",
@@ -427,10 +434,15 @@ const DAYS = [
      note:"Schiena dritta, tira verso l'ombelico stringendo le scapole. Lascia allungare la schiena in avanti senza curvarti.",v:YT("EU7bOadUsNI")},
     {id:"sapd",name:"Straight-arm pulldown",t:"i",sets:2,reps:"10-15",rest:"90\"-2'",rs:90,kg:25,step:2.5,unit:"",ws:false,
      note:"Braccia quasi tese, busto leggermente inclinato. Porta la barra fino alle cosce usando i dorsali, non i tricipiti.",v:YTS("straight arm pulldown proper form")},
-    {id:"cablecrunch",name:"Cable crunch",t:"i",sets:2,reps:"10-15",rest:"90\"",rs:90,kg:45,step:5,unit:"",ws:true,
-     note:"In ginocchio, corda ai lati della testa. Arrotola la colonna portando i gomiti verso le ginocchia, il bacino resta fermo.",v:YT("0KEP6A1deBE")},
+    {id:"abcrunch",name:"Abdominal crunch machine",t:"i",sets:2,reps:"10-15",rest:"90\"",rs:90,kg:45,step:5,unit:"",ws:true,
+     note:"Petto contro i cuscinetti, piedi agganciati. Arrotola la colonna portando lo sterno verso il bacino, espira mentre chiudi. Risali lento, senza tirare con le braccia.",v:YTS("ab crunch machine proper form")},
     {id:"hlr",name:"Leg raise alla sbarra",t:"i",sets:2,reps:"8-15",rest:"90\"",rs:90,kg:null,unit:"",ws:false,
      note:"Senza oscillare. Porta il bacino verso il petto, non solo le gambe in alto. Se è troppo difficile, ginocchia piegate.",v:YT("JXztA3fLp50")},
+   ],
+   // Removed from the plan, kept so past sessions still show in Storico and Statistiche.
+   old:[
+     {id:"cablecrunch",name:"Cable crunch",t:"i",sets:2,reps:"10-15",rest:"90\"",rs:90,kg:45,step:5,unit:"",ws:true,
+     note:"In ginocchio, corda ai lati della testa. Arrotola la colonna portando i gomiti verso le ginocchia, il bacino resta fermo.",v:YT("0KEP6A1deBE")},
    ]},
  { id:"g7", n:7, tab:"Braccia", sub:"Spalle, braccia, addome + corsa", title:"Spalle · Braccia · Addome",
    after:"Finiti i pesi, vai a correre. Mai il contrario: la corsa prima toglie forza alle serie pesanti.",
@@ -450,10 +462,15 @@ const DAYS = [
      note:"Gomiti fermi ai fianchi, estendi fino in fondo. Con la corda apri le mani in basso.",v:YT("d-ySLTHUgQA")},
     {id:"ohext",name:"Estensione tricipiti sopra la testa",t:"i",sets:2,reps:"10-15",rest:"90\"",rs:90,kg:20,step:2.5,unit:"",ws:false,
      note:"Di spalle al cavo, gomiti puntati in avanti e stretti. Scendi dietro la testa fino al massimo allungamento.",v:YT("ny7Xx1CYkVg")},
-    {id:"abwheel",name:"Ab wheel o plank",t:"i",sets:2,reps:"cedim.",rest:"90\"",rs:90,kg:null,unit:"",ws:false,
-     note:"Ab wheel dalle ginocchia: addome contratto, glutei stretti, vai avanti solo finché la schiena non si inarca.",v:YT("PK4n7qJpOhM")},
+    {id:"twist",name:"Russian twist con disco",t:"i",sets:2,reps:"10-15 per lato",rest:"90\"",rs:90,kg:10,step:2.5,unit:"disco",ws:false,
+     note:"Seduto, busto inclinato indietro di circa 45 gradi, schiena dritta, talloni a terra (sollevali solo se è facile). Ruota spalle e busto da un lato all'altro, il disco segue il petto: non muovere solo le braccia.",v:YTS("russian twist plate proper form")},
     {id:"wrist",name:"Wrist curl",t:"o",sets:2,reps:"10-15",rest:"60-90\"",rs:75,kg:10,step:1,unit:"per mano",ws:false,
      note:"Avambracci appoggiati sulla panca, solo i polsi si muovono. Lascia rotolare il manubrio sulle dita in basso.",v:YT("NoO4ol8Zw2I")},
+   ],
+   // Removed from the plan, kept so past sessions still show in Storico and Statistiche.
+   old:[
+     {id:"abwheel",name:"Ab wheel o plank",t:"i",sets:2,reps:"cedim.",rest:"90\"",rs:90,kg:null,unit:"",ws:false,
+     note:"Ab wheel dalle ginocchia: addome contratto, glutei stretti, vai avanti solo finché la schiena non si inarca.",v:YT("PK4n7qJpOhM")},
    ]},
 ];
 
@@ -489,7 +506,9 @@ const icon = k => `<span class="ic k-${kindOf(k)}" aria-hidden="true">${ICON_LIN
 // Huberman plan, Monday first: shown as a suggestion only, the day is whatever gets recorded.
 const SUG = ["muay","g2","muay","g4","muay","contrast","g7"];
 
-const ALL = {}; DAYS.forEach(d=>d.ex.forEach(e=>ALL[e.id]=e));
+// Current exercises plus the ones removed from the plan (history only).
+const exAll = d => d.ex.concat(d.old||[]);
+const ALL = {}; DAYS.forEach(d=>exAll(d).forEach(e=>ALL[e.id]=e));
 const TYPE = {c:["c","Composto"],i:["i","Isolamento"],o:["o","Opzionale"]};
 const isGym = k => !!(ACT[k]&&ACT[k].gym);
 const isCardio = k => !!(ACT[k]&&ACT[k].cardio);
@@ -544,7 +563,7 @@ function status(r){
 (()=>{ const o=lsGet(LS_SESS); if(!o||!o.date||!o.done) return;
   for(const id in o.done) if(ALL[id] && (o.done[id]||[]).some(Boolean)){
     exRec(o.date,id).sets=o.done[id].map(Boolean);
-    const d=DAYS.find(x=>x.ex.some(e=>e.id===id)), r=rec(o.date); if(!has(r,d.id)) r.acts.push({k:d.id,done:false}); }
+    const d=DAYS.find(x=>exAll(x).some(e=>e.id===id)), r=rec(o.date); if(!has(r,d.id)) r.acts.push({k:d.id,done:false}); }
   tidy(o.date); try{ localStorage.removeItem(LS_SESS); }catch(e){} })();
 try{ localStorage.setItem(LS_KEY,JSON.stringify(S)); }catch(e){}
 
@@ -624,7 +643,7 @@ function addAct(k){
 }
 function removeAct(i){
   const r=S.days[sel], a=r.acts[i];
-  const ids=isGym(a.k)?DAYS.find(d=>d.id===a.k).ex.map(e=>e.id).filter(id=>r.ex[id]):[];
+  const ids=isGym(a.k)?exAll(DAYS.find(d=>d.id===a.k)).map(e=>e.id).filter(id=>r.ex[id]):[];
   if(ids.length && !confirm(`Rimuovere ${ACT[a.k].s} da questo giorno? Le spunte degli esercizi verranno cancellate.`)) return;
   ids.forEach(id=>delete r.ex[id]); r.acts.splice(i,1);
   tidy(sel); persist(); render();
@@ -784,7 +803,7 @@ function histDay(date){
     const st = a.k==="rest" ? "" : `<span class="st${a.done?" on":""}">${a.done?"✓ Realizzato":"Da realizzare"}</span>`;
     let body="";
     if(isGym(a.k)){
-      const exs=DAYS.find(d=>d.id===a.k).ex.filter(e=>r.ex[e.id]);
+      const exs=exAll(DAYS.find(d=>d.id===a.k)).filter(e=>r.ex[e.id]);
       const nSets=exs.reduce((t,e)=>t+(r.ex[e.id].sets||[]).filter(Boolean).length,0), nDone=exs.filter(e=>r.ex[e.id].done).length;
       body = !exs.length ? `<p>${a.done?"Nessun esercizio o serie segnati: registrato solo l'allenamento.":"Nessun esercizio o serie segnati."}</p>`
         : `<p class="num">${nDone} eserciz${nDone===1?"io":"i"} fatt${nDone===1?"o":"i"} · ${nSets} serie di lavoro</p>
@@ -911,7 +930,7 @@ document.addEventListener("click",ev=>{
   const x=t.closest("[data-x]"); if(x){ ev.preventDefault(); toggleEx(x.dataset.x); return; }
   const w=t.closest("[data-w]"); if(w){ unlock(); changeW(w.dataset.w,+w.dataset.d); return; }
   const s=t.closest("[data-s]"); if(s){ unlock(); toggleSet(s.dataset.s,+s.dataset.i); return; }
-  const rs=t.closest("[data-reset]"); if(rs){ const r=S.days[sel]; if(r){ DAYS.find(d=>d.id===rs.dataset.reset).ex.forEach(e=>delete r.ex[e.id]); tidy(sel); persist(); } stopTimer(); render(); }
+  const rs=t.closest("[data-reset]"); if(rs){ const r=S.days[sel]; if(r){ exAll(DAYS.find(d=>d.id===rs.dataset.reset)).forEach(e=>delete r.ex[e.id]); tidy(sel); persist(); } stopTimer(); render(); }
 });
 
 // Typing the minutes saves on every keystroke without re-rendering, so the field keeps focus.

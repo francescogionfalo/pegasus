@@ -211,7 +211,7 @@ if(typeof document !== "undefined"){
     const ids=Object.keys(ALL);
     if(!stEx || !ALL[stEx]) stEx = C.lastSessionId(S.days, ids) || DAYS[0].ex[0].id;
     const count=e=>e.kg==null ? C.countSessions(S.days,e.id) : C.sessions(S.days,e.id).length;
-    const sel=`<select id="st-ex" class="st-sel" aria-label="Esercizio">${DAYS.map(d=>`<optgroup label="${d.tab}">${d.ex.map(e=>`<option value="${e.id}"${e.id===stEx?" selected":""}>${e.name}${count(e)?"":" (nessuna sessione)"}</option>`).join("")}</optgroup>`).join("")}</select>`;
+    const sel=`<select id="st-ex" class="st-sel" aria-label="Esercizio">${DAYS.map(d=>`<optgroup label="${d.tab}">${d.ex.concat((d.old||[]).filter(count)).map(e=>`<option value="${e.id}"${e.id===stEx?" selected":""}>${e.name}${count(e)?"":" (nessuna sessione)"}</option>`).join("")}</optgroup>`).join("")}</select>`;
     const e=ALL[stEx], unit=/^(per |totale)/.test(e.unit)?" "+e.unit:"";
     if(e.kg==null){ const n=C.countSessions(S.days,e.id);
       return sel+`<p class="st-note">${n?`${n} session${n===1?"e":"i"}. Esercizio a corpo libero: nessun peso da mostrare.`:"Nessuna sessione registrata."}</p>`; }
